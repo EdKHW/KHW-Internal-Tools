@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="none">
+    <title>Synergy Deductible Assist v8</title>
+    <script>
+        // Google Sites iframe auto-resize
+        // Tells the parent Sites page to match this app's height automatically
+        function notifyResize() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({ type: 'resize', height: height }, '*');
+        }
+        // Watch for any DOM changes and resize accordingly
+        window.addEventListener('load', () => {
+            notifyResize();
+            const observer = new MutationObserver(notifyResize);
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+        window.addEventListener('resize', notifyResize);
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #059669;
+            --green-light: #d1fae5;
+            --green-mid: #10b981;
+            --green-dark: #047857;
+            --amber: #f59e0b;
+            --amber-light: #fef3c7;
+            --blue: #3b82f6;
+            --blue-light: #dbeafe;
+            --red: #dc2626;
+            --bg: #f0f4f0;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1a1a1a;
+            --muted: #64748b;
+            --radius: 14px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 10px;
+            background-image: radial-gradient(circle at 20% 20%, rgba(5,150,105,0.06) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(16,185,129,0.04) 0%, transparent 50%);
+        }
+
+        .container { max-width: 880px; margin: 0 auto; }
+
+        /* HEADER */
+        .header {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .header-logo {
+            width: 46px; height: 46px;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+        }
+        .header-title { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+        .header-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .header-badge {
+            margin-left: auto;
+            background: var(--green-light);
+            color: var(--green-dark);
+            font-size: 11px; font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 36px 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        /* STEP INDICATOR */
+        .step-tag {
+            display: inline-block;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--green);
+            background: var(--green-light);
+            padding: 4px 12px; border-radius: 20px;
+            margin-bottom: 14px;
+        }
+        .q-title { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 10px; line-height: 1.25; }
+        .q-help { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+
+        /* RADIO / CHECKBOX OPTIONS */
+        .option-list { display: flex; flex-direction: column; gap: 10px; }
+        .radio-opt, .check-opt {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: white;
+        }
+        .radio-opt:hover, .check-opt:hover { border-color: #a7f3d0; background: #f0fdf4; }
+        .radio-opt.selected, .check-opt.selected { border-color: var(--green); background: #f0fdf4; box-shadow: 0 0 0 3px rgba(5,150,105,0.08); }
+        .radio-opt input, .check-opt input { width: 20px; height: 20px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+        .opt-label { font-size: 15px; font-weight: 500; color: #374151; cursor: pointer; line-height: 1.4; }
+        .opt-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+        /* CPT CODES */
+        .cpt-section { margin-bottom: 28px; }
+        .cat-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--green-light); }
+        .cpt-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 7px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+        }
+        .cpt-row:hover { background: #f9fafb; border-color: #d1d5db; }
+        .cpt-row.selected { background: #f0fdf4; border-color: var(--green); }
+        .cpt-row input { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+        .cpt-code { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--green-dark); min-width: 68px; }
+        .cpt-desc { flex: 1; font-size: 14px; color: #374151; }
+        .cpt-tag { font-size: 10px; background: var(--green-mid); color: white; padding: 2px 7px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+        .cpt-fee { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--text); min-width: 72px; text-align: right; font-size: 14px; }
+
+        /* RUNNING TOTAL */
+        .running-total {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid var(--green-mid);
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-top: 20px;
+        }
+        .rt-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .rt-label { font-size: 14px; color: var(--green-dark); font-weight: 600; }
+        .rt-value { font-size: 18px; font-weight: 800; color: var(--green); font-family: 'DM Mono', monospace; }
+        .rt-main { border-top: 2px solid #6ee7b7; padding-top: 12px; margin-top: 8px; }
+        .rt-count { font-size: 12px; color: var(--muted); }
+
+        /* FORM INPUTS */
+        .field-block { margin-bottom: 18px; }
+        .field-label { font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-input {
+            width: 100%; padding: 13px 16px;
+            border: 2px solid var(--border); border-radius: 10px;
+            font-size: 16px; font-family: 'DM Sans', sans-serif;
+            color: var(--text); transition: all 0.15s;
+        }
+        .form-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(5,150,105,0.08); }
+        .input-wrap { position: relative; }
+        .dollar { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 17px; font-weight: 600; color: #9ca3af; }
+        .money-input { padding-left: 34px; font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 600; }
+
+        /* INFO BOXES */
+        .info-box { border-radius: 12px; padding: 20px 24px; margin-bottom: 18px; }
+        .info-box.blue { background: var(--blue-light); border: 2px solid #93c5fd; }
+        .info-box.amber { background: var(--amber-light); border: 2px solid #fcd34d; }
+        .info-box.green { background: var(--green-light); border: 2px solid #6ee7b7; }
+        .info-box.red { background: #fef2f2; border: 2px solid #fca5a5; }
+        .info-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+        .info-box.blue .info-title { color: #1e40af; }
+        .info-box.amber .info-title { color: #92400e; }
+        .info-box.green .info-title { color: var(--green-dark); }
+        .info-box.red .info-title { color: #991b1b; }
+        .info-text { font-size: 14px; line-height: 1.65; }
+        .info-box.blue .info-text { color: #1e3a8a; }
+        .info-box.amber .info-text { color: #78350f; }
+        .info-box.green .info-text { color: #065f46; }
+        .info-box.red .info-text { color: #7f1d1d; }
+
+        /* RESULT BOXES */
+        .result-hero { text-align: center; padding: 44px 32px; border-radius: 16px; margin-bottom: 24px; }
+        .result-hero.success { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #6ee7b7; }
+        .result-hero.warning { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #fcd34d; }
+        .result-hero.info { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #93c5fd; }
+        .result-icon { font-size: 52px; margin-bottom: 12px; }
+        .result-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+        .result-amount { font-size: 64px; font-weight: 900; color: var(--green); margin: 16px 0; font-family: 'DM Mono', monospace; line-height: 1; }
+        .result-hero.warning .result-amount { color: #d97706; }
+        .result-msg { font-size: 17px; color: #374151; line-height: 1.6; font-weight: 500; margin-bottom: 16px; }
+        .result-detail { font-size: 14px; color: var(--muted); line-height: 1.8; max-width: 560px; margin: 0 auto; }
+
+        /* BREAKDOWN */
+        .breakdown { background: white; border: 2px solid var(--border); border-radius: 12px; padding: 20px 24px; margin: 18px 0; text-align: left; }
+        .breakdown-title { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bd-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .bd-row:last-child { border-bottom: none; }
+        .bd-label { color: var(--muted); }
+        .bd-val { font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+        .bd-row.total { border-top: 2px solid var(--border); padding-top: 12px; margin-top: 4px; }
+        .bd-row.total .bd-label { font-weight: 700; color: var(--text); font-size: 15px; }
+        .bd-row.total .bd-val { font-size: 18px; color: var(--green); }
+        .bd-row.checkout-sum { background: #f0fdf4; border-radius: 8px; padding: 12px 14px; margin-top: 8px; border-bottom: none; }
+        .bd-row.checkout-collect { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 8px; padding: 14px 16px; margin-top: 6px; border-bottom: none; }
+        .bd-row.checkout-collect .bd-label { color: white; font-weight: 700; font-size: 16px; }
+        .bd-row.checkout-collect .bd-val { color: white; font-size: 22px; }
+
+        /* CHECKOUT ALREADY-PAID LIVE DISPLAY */
+        .collect-display {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 12px; padding: 22px 24px; margin-top: 16px;
+        }
+        .collect-display .cd-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .collect-display .cd-label { font-size: 14px; color: #9ca3af; font-weight: 500; }
+        .collect-display .cd-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 600; color: #d1d5db; }
+        .collect-display .cd-divider { border: none; border-top: 1px solid #444; margin: 12px 0; }
+        .collect-display .cd-collect-label { font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .collect-display .cd-collect-val { font-family: 'DM Mono', monospace; font-size: 42px; font-weight: 900; color: #34d399; line-height: 1; }
+        .collect-display .cd-collect-val.overpaid { color: #f87171; }
+        .collect-display .cd-refund-note { font-size: 13px; color: #f87171; margin-top: 6px; }
+
+        /* BUTTONS */
+        .btn { padding: 13px 26px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
+        .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+
+        /* START SCREEN */
+        .start-screen { text-align: center; padding: 50px 20px; }
+        .start-icon { font-size: 72px; margin-bottom: 18px; }
+        .start-title { font-size: 34px; font-weight: 900; color: var(--text); margin-bottom: 12px; letter-spacing: -0.5px; }
+        .start-desc { font-size: 17px; color: var(--muted); line-height: 1.65; max-width: 520px; margin: 0 auto 36px; }
+
+        /* VISIT TYPE CARDS */
+        .visit-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+        @media (max-width: 640px) { .visit-cards { grid-template-columns: 1fr; } }
+        .visit-card {
+            padding: 22px 18px; border: 2px solid var(--border); border-radius: 12px;
+            cursor: pointer; text-align: center; transition: all 0.15s; background: white;
+        }
+        .visit-card:hover { border-color: #a7f3d0; background: #f9fdfb; }
+        .visit-card.selected { border-color: var(--green); background: #f0fdf4; box-shadow: 0 0 0 3px rgba(5,150,105,0.1); }
+        .visit-card-icon { font-size: 32px; margin-bottom: 10px; }
+        .visit-card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .visit-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+        .visit-card-badge { display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 10px; }
+        .badge-green { background: var(--green-light); color: var(--green-dark); }
+        .badge-blue { background: var(--blue-light); color: #1e40af; }
+        .badge-amber { background: var(--amber-light); color: #92400e; }
+
+        /* FOOTER */
+        .footer { text-align: center; padding: 18px; margin-top: 20px; border-top: 1px solid var(--border); }
+        .footer-text { font-size: 12px; color: #94a3b8; line-height: 1.7; }
+        .footer-co { font-weight: 700; color: var(--green); }
+
+        @media print { body, .header, .btn, .actions, .footer { display: none; } }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="header-logo">👥</div>
+        <div>
+            <div class="header-title">Synergy Deductible Assist</div>
+            <div class="header-sub">Front Office Collections Tool — Kokoro Health & Wellness</div>
+        </div>
+        <div class="header-badge">v8</div>
+    </div>
+
+    <div class="card" id="app"></div>
+
+    <div class="footer">
+        <div class="footer-text">
+            <span class="footer-co">Property of Kokoro Health & Wellness</span><br>
+            14860 Montfort Drive, Suite 140, Dallas, TX 75254<br>
+            © 2026 Kokoro Health & Wellness — For Internal Use Only — Confidential & Proprietary
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CPT DATABASE
+// ─────────────────────────────────────────────
+const CPT = [
+    // E/M
+    { code:'99213', desc:'Office Visit Est Level 3',         fee:150.00,  cat:'E/M Codes',             prev:false },
+    { code:'99214', desc:'Office Visit Est Level 4',         fee:175.00,  cat:'E/M Codes',             prev:false },
+    { code:'99215', desc:'Office Visit Est Level 5',         fee:254.00,  cat:'E/M Codes',             prev:false },
+    { code:'99203', desc:'Office Visit New Level 3',         fee:190.00,  cat:'E/M Codes',             prev:false },
+    { code:'99204', desc:'Office Visit New Level 4',         fee:190.00,  cat:'E/M Codes',             prev:false },
+    { code:'99205', desc:'Office Visit New Level 5',         fee:190.00,  cat:'E/M Codes',             prev:false },
+    // Preventive Visits
+    { code:'G0438', desc:'Annual Wellness Visit - Initial',  fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'G0439', desc:'Annual Wellness Visit - Subsequent',fee:0,      cat:'Preventive Visits',     prev:true  },
+    { code:'G0402', desc:'Welcome to Medicare Visit',        fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99385', desc:'Preventive New 18-39',             fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99386', desc:'Preventive New 40-64',             fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99387', desc:'Preventive New 65+',               fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99395', desc:'Preventive Est 18-39',             fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99396', desc:'Preventive Est 40-64',             fee:0,       cat:'Preventive Visits',     prev:true  },
+    { code:'99397', desc:'Preventive Est 65+',               fee:0,       cat:'Preventive Visits',     prev:true  },
+    // Preventive Screening
+    { code:'96127', desc:'Brief behavioral assessment',      fee:5.76,    cat:'Preventive Screening',  prev:true  },
+    { code:'G0447', desc:'Behavioral counseling obesity',    fee:31.96,   cat:'Preventive Screening',  prev:true  },
+    { code:'G0101', desc:'Cervical/vaginal cancer screening',fee:47.77,   cat:'Preventive Screening',  prev:true  },
+    { code:'Q0091', desc:'Pap smear collection',             fee:53.27,   cat:'Preventive Screening',  prev:true  },
+    { code:'G0103', desc:'Prostate cancer screening PSA',    fee:100.00,  cat:'Preventive Screening',  prev:true  },
+    { code:'99497', desc:'Advance care planning 30min',      fee:103.06,  cat:'Preventive Screening',  prev:true  },
+    // Labs
+    { code:'36415', desc:'Venipuncture',                     fee:10.00,   cat:'Labs',                  prev:false },
+    { code:'83036', desc:'Hemoglobin A1c',                   fee:15.00,   cat:'Labs',                  prev:false },
+    // Injections
+    { code:'96372', desc:'Injection admin IM/SubQ',          fee:17.68,   cat:'Injections',            prev:false },
+    { code:'90471', desc:'Immunization admin',               fee:30.00,   cat:'Injections',            prev:false },
+    { code:'J2919', desc:'Methylprednisolone injection 5mg', fee:10.75,   cat:'Injections',            prev:false },
+    { code:'J3301', desc:'PCV20 vaccine IM (J3301)',         fee:10.75,   cat:'Injections',            prev:false },
+    { code:'J3420', desc:'PCV20 vaccine IM (J3420)',         fee:45.94,   cat:'Injections',            prev:false },
+    { code:'90656', desc:'Afluria flu vaccine 2024-2025',    fee:22.35,   cat:'Injections',            prev:false },
+    { code:'90686', desc:'Influenza Afluria',                fee:27.93,   cat:'Injections',            prev:false },
+    { code:'90715', desc:'Adacel (Tdap)',                    fee:104.36,  cat:'Injections',            prev:false },
+    { code:'90677', desc:'PCV20 vaccine IM (90677)',         fee:327.80,  cat:'Injections',            prev:false },
+    { code:'90750', desc:'Vaccine',                          fee:250.00,  cat:'Injections',            prev:false },
+    // Diagnostic
+    { code:'93000', desc:'EKG',                              fee:36.00,   cat:'Diagnostic Tests',      prev:false },
+    { code:'92250', desc:'Fundus photography EYEPAC',        fee:100.00,  cat:'Diagnostic Tests',      prev:false },
+    { code:'92548', desc:'Computerized posturography',       fee:60.67,   cat:'Diagnostic Tests',      prev:false },
+    { code:'92551', desc:'Hearing screening pure tone',      fee:50.00,   cat:'Diagnostic Tests',      prev:false },
+    { code:'93922', desc:'Vascular studies extremities',     fee:103.36,  cat:'Diagnostic Tests',      prev:false },
+    { code:'95921', desc:'Autonomic testing cardiovagal',    fee:111.37,  cat:'Diagnostic Tests',      prev:false },
+    { code:'95923', desc:'Autonomic testing sudomotor',      fee:158.66,  cat:'Diagnostic Tests',      prev:false },
+    { code:'95924', desc:'Autonomic testing combined',       fee:187.62,  cat:'Diagnostic Tests',      prev:false },
+    { code:'77002', desc:'Needle localization by x-ray',     fee:147.64,  cat:'Diagnostic Tests',      prev:false },
+    // Procedures
+    { code:'69210', desc:'Cerumen removal',                  fee:100.00,  cat:'Procedures',            prev:false },
+    { code:'98926', desc:'OMT 3-4 body regions',             fee:54.92,   cat:'Procedures',            prev:false },
+    { code:'98927', desc:'OMT 5-6 body regions',             fee:71.74,   cat:'Procedures',            prev:false },
+    { code:'98928', desc:'OMT 7-8 body regions',             fee:87.82,   cat:'Procedures',            prev:false },
+    { code:'27369', desc:'Knee injection contrast',          fee:224.16,  cat:'Procedures',            prev:false },
+    // Care Management
+    { code:'99495', desc:'Transitional care moderate',       fee:253.21,  cat:'Care Management',       prev:false },
+    { code:'99496', desc:'Transitional care high',           fee:341.57,  cat:'Care Management',       prev:false },
+];
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let visitType = null;   // 'preventive' | 'office' | 'checkout'
+let step = 0;
+let selected = [];      // selected CPT codes (checkout only)
+let officeEMCode = null; // selected E/M code for office visit estimate
+let A = {               // answers
+    insuranceType: null,
+    copayField: null,
+    coinsuranceField: null,
+    hasDeductibleKW: false,
+    copayAmount: null,
+    annualDeductible: null,
+    remainingBalance: null,
+    alreadyPaid: null,
+    patientMRN: '',
+    patientDOB: '',
+    staffName: ''
+};
+let maType = null;
+let calcBillable = 0;   // stored at result time
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+const app = () => document.getElementById('app');
+const $ = id => document.getElementById(id);
+
+function billableTotal() {
+    return selected.reduce((s,c) => {
+        const cpt = CPT.find(x=>x.code===c);
+        return s + (cpt && !cpt.prev ? cpt.fee : 0);
+    }, 0);
+}
+function preventiveTotal() {
+    return selected.reduce((s,c) => {
+        const cpt = CPT.find(x=>x.code===c);
+        return s + (cpt && cpt.prev ? cpt.fee : 0);
+    }, 0);
+}
+
+function servicesBreakdown(includeHeader=true) {
+    if (!selected.length) return '';
+    const bt = billableTotal(), pt = preventiveTotal();
+    const rows = selected.map(c => {
+        const cpt = CPT.find(x=>x.code===c);
+        return `<div class="bd-row">
+            <span class="bd-label">${cpt.code} — ${cpt.desc}</span>
+            <span class="bd-val">${cpt.prev ? '$0.00 <small style="color:var(--green-mid);font-family:sans-serif;font-size:11px">PREV</small>' : '$'+cpt.fee.toFixed(2)}</span>
+        </div>`;
+    }).join('');
+    return `<div class="breakdown">
+        ${includeHeader?'<div class="breakdown-title">Services Selected</div>':''}
+        ${rows}
+        ${pt>0?`<div class="bd-row total"><span class="bd-label">Preventive Total</span><span class="bd-val" style="color:var(--green-mid)">$0.00</span></div>`:''}
+        ${bt>0?`<div class="bd-row total"><span class="bd-label">Patient Responsibility</span><span class="bd-val">$${bt.toFixed(2)}</span></div>`:''}
+    </div>`;
+}
+
+function resetState() {
+    visitType=null; step=0; selected=[]; officeEMCode=null; maType=null; calcBillable=0;
+    A={insuranceType:null,copayField:null,coinsuranceField:null,hasDeductibleKW:false,copayAmount:null,annualDeductible:null,remainingBalance:null,alreadyPaid:null,patientMRN:'',patientDOB:'',staffName:''};
+}
+
+// ─────────────────────────────────────────────
+//  START SCREEN
+// ─────────────────────────────────────────────
+function renderStart() {
+    resetState();
+    app().innerHTML = `
+    <div class="start-screen">
+        <div class="start-icon">🎯</div>
+        <div class="start-title">Synergy Deductible Assist</div>
+        <div class="start-desc">Determine the correct collection amount at patient check-in or checkout based on insurance eligibility and services performed.</div>
+        <button class="btn btn-primary" style="font-size:17px;padding:16px 40px;" onclick="renderVisitType()">Begin Assessment →</button>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+//  VISIT TYPE SCREEN
+// ─────────────────────────────────────────────
+function renderVisitType() {
+    app().innerHTML = `
+    <div class="step-tag">Step 1 of 4</div>
+    <div class="q-title">What type of visit is this?</div>
+    <div class="q-help">Select the visit type to determine the appropriate collection workflow.</div>
+    <div class="visit-cards">
+        <div class="visit-card" id="vc-preventive" onclick="pickVisit('preventive')">
+            <div class="visit-card-icon">🌿</div>
+            <div class="visit-card-title">Preventive Visit</div>
+            <div class="visit-card-desc">AWV / WWE / Annual Physical</div>
+            <div class="visit-card-badge badge-green">$0 at check-in</div>
+        </div>
+        <div class="visit-card" id="vc-office" onclick="pickVisit('office')">
+            <div class="visit-card-icon">📋</div>
+            <div class="visit-card-title">Routine Office Visit</div>
+            <div class="visit-card-desc">Use 24–48 hrs before or at check-in</div>
+            <div class="visit-card-badge badge-blue">Estimate only</div>
+        </div>
+        <div class="visit-card" id="vc-checkout" onclick="pickVisit('checkout')">
+            <div class="visit-card-icon">🧾</div>
+            <div class="visit-card-title">Patient Checkout</div>
+            <div class="visit-card-desc">Superbill must be present</div>
+            <div class="visit-card-badge badge-amber">Full collection + PDF</div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← Cancel</button>
+        <button class="btn btn-primary" id="vtNext" onclick="goVisitType()" disabled>Next →</button>
+    </div>`;
+}
+
+function pickVisit(type) {
+    visitType = type;
+    ['preventive','office','checkout'].forEach(t => {
+        const el = $('vc-'+t);
+        if(el) el.classList.toggle('selected', t===type);
+    });
+    $('vtNext').disabled = false;
+}
+
+function goVisitType() {
+    if (visitType === 'preventive') {
+        showPreventiveResult();
+    } else if (visitType === 'office') {
+        // OFFICE = eligibility questions only, default to 99214 $175 for deductible calc
+        officeEMCode = { code: '99214', fee: 175.00 };
+        renderInsuranceType();
+    } else if (visitType === 'checkout') {
+        // CHECKOUT = CPT codes first, then eligibility, then already-paid, then PDF
+        renderCPTSelection();
+    }
+}
+
+// ─────────────────────────────────────────────
+//  OFFICE E/M CODE PICKER (office visit only)
+//  FO picks the expected visit level — used to
+//  calculate the estimate without a full superbill
+// ─────────────────────────────────────────────
+function renderOfficeEMPicker() {
+    const emCodes = [
+        { code:'99213', desc:'Est Patient — Level 3 (straightforward)',    fee:150.00 },
+        { code:'99214', desc:'Est Patient — Level 4 (moderate complexity)', fee:175.00 },
+        { code:'99215', desc:'Est Patient — Level 5 (high complexity)',     fee:254.00 },
+        { code:'99203', desc:'New Patient — Level 3',                       fee:190.00 },
+        { code:'99204', desc:'New Patient — Level 4',                       fee:190.00 },
+        { code:'99205', desc:'New Patient — Level 5',                       fee:190.00 },
+    ];
+
+    app().innerHTML = `
+    <div class="step-tag">Step 2 of 4 — Routine Office Visit</div>
+    <div class="q-title">Expected Visit Level</div>
+    <div class="q-help">Select the E/M code for the expected visit. This sets the estimate amount — no superbill needed yet.</div>
+    <div class="option-list">
+        ${emCodes.map(c=>`
+        <div class="radio-opt" id="em-${c.code}" onclick="pickEM(this,'${c.code}',${c.fee})">
+            <input type="radio" name="emCode">
+            <div style="flex:1">
+                <span class="opt-label">${c.desc}</span>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green);margin-top:2px">${c.code} &nbsp;—&nbsp; $${c.fee.toFixed(2)}</div>
+            </div>
+        </div>`).join('')}
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderVisitType()">← Back</button>
+        <button class="btn btn-primary" id="emNext" onclick="renderInsuranceType()" disabled>Next →</button>
+    </div>`;
+}
+
+function pickEM(el, code, fee) {
+    document.querySelectorAll('[name="emCode"]').forEach(r=>r.closest('.radio-opt').classList.remove('selected'));
+    el.classList.add('selected'); el.querySelector('input').checked=true;
+    officeEMCode = { code, fee };
+    $('emNext').disabled = false;
+}
+
+
+function showPreventiveResult() {
+    app().innerHTML = `
+    <div class="result-hero success">
+        <div class="result-icon">✅</div>
+        <div class="result-title">Preventive Visit</div>
+        <div class="result-amount">$0.00</div>
+        <div class="result-msg">No collection needed at check-in.</div>
+        <div class="result-detail">All preventive services are covered at 100% for in-network providers under ACA/Medicare guidelines.</div>
+    </div>
+    <div class="info-box amber">
+        <div class="info-title">⚠️ IMPORTANT — AT CHECKOUT:</div>
+        <div class="info-text">
+            Review the superbill for any <strong>non-preventive services</strong> performed. 
+            Use <strong>Patient Checkout</strong> to calculate any additional patient responsibility.
+            Contact your Front Office Manager for checkout workflow guidance.
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← New Assessment</button>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+//  CPT SELECTION (CHECKOUT ONLY)
+// ─────────────────────────────────────────────
+function renderCPTSelection() {
+    const cats = [...new Set(CPT.map(c=>c.cat))];
+    let catsHTML = cats.map(cat => {
+        const codes = CPT.filter(c=>c.cat===cat);
+        return `<div class="cpt-section">
+            <div class="cat-title">${cat}</div>
+            ${codes.map(c=>`
+            <label class="cpt-row" id="row-${c.code}" for="cpt-${c.code}">
+                <input type="checkbox" id="cpt-${c.code}" onchange="updateCPT()">
+                <span class="cpt-code">${c.code}</span>
+                <span class="cpt-desc">${c.desc}</span>
+                ${c.prev?'<span class="cpt-tag">Prev</span>':''}
+                <span class="cpt-fee">$${c.fee.toFixed(2)}</span>
+            </label>`).join('')}
+        </div>`;
+    }).join('');
+
+    app().innerHTML = `
+    <div class="step-tag">Step 2 of 5 — Patient Checkout</div>
+    <div class="q-title">Select services from the superbill</div>
+    <div class="q-help">Check all CPT codes written by the provider on the superbill.</div>
+    ${catsHTML}
+    <div id="runTotal" style="display:none">
+        <div class="running-total">
+            <div class="rt-row"><span class="rt-label">Preventive Services:</span><span class="rt-value" id="rt-prev">$0.00</span></div>
+            <div class="rt-row"><span class="rt-label">Billable Services:</span><span class="rt-value" id="rt-bill">$0.00</span></div>
+            <div class="rt-row rt-main"><span class="rt-label" style="font-size:16px">Total Patient Responsibility:</span><span class="rt-value" style="font-size:22px" id="rt-grand">$0.00</span></div>
+            <div class="rt-count" id="rt-count"></div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderVisitType()">← Back</button>
+        <button class="btn btn-primary" id="cptNext" onclick="goCPT()" disabled>Next →</button>
+    </div>`;
+}
+
+function updateCPT() {
+    selected = [];
+    document.querySelectorAll('.cpt-row input:checked').forEach(cb => {
+        selected.push(cb.id.replace('cpt-',''));
+    });
+    document.querySelectorAll('.cpt-row').forEach(row => {
+        const cb = row.querySelector('input');
+        row.classList.toggle('selected', cb && cb.checked);
+    });
+    const bt = billableTotal(), pt = preventiveTotal();
+    if (selected.length > 0) {
+        $('runTotal').style.display='block';
+        $('rt-prev').textContent = '$'+pt.toFixed(2);
+        $('rt-bill').textContent = '$'+bt.toFixed(2);
+        $('rt-grand').textContent = '$'+bt.toFixed(2);
+        $('rt-count').textContent = selected.length + ' code' + (selected.length!==1?'s':'') + ' selected';
+        $('cptNext').disabled = false;
+    } else {
+        $('runTotal').style.display='none';
+        $('cptNext').disabled = true;
+    }
+}
+
+function goCPT() {
+    const allPrev = selected.every(c => { const x=CPT.find(p=>p.code===c); return x&&x.prev; });
+    if (allPrev) {
+        showPreventiveOnlyCPT();
+    } else {
+        renderInsuranceType();
+    }
+}
+
+function showPreventiveOnlyCPT() {
+    app().innerHTML = `
+    <div class="result-hero success">
+        <div class="result-icon">✅</div>
+        <div class="result-title">Preventive Care Only</div>
+        <div class="result-amount">$0.00</div>
+        <div class="result-msg">No collection needed.<br>All selected services are preventive care.</div>
+        <div class="result-detail">Preventive services covered 100% in-network.</div>
+    </div>
+    ${servicesBreakdown()}
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← New Assessment</button>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+//  INSURANCE TYPE SCREEN
+//  Called from BOTH office and checkout flows
+// ─────────────────────────────────────────────
+function renderInsuranceType() {
+    const stepLabel = visitType === 'checkout' ? 'Step 3 of 5 — Patient Checkout' : 'Step 2 of 4 — Routine Office Visit';
+    const backFn = visitType === 'checkout' ? 'renderCPTSelection()' : 'renderVisitType()';
+
+    app().innerHTML = `
+    <div class="step-tag">${stepLabel}</div>
+    <div class="q-title">What type of insurance?</div>
+    <div class="q-help">Select the insurance type from the eligibility response.</div>
+    <div class="option-list">
+        <div class="radio-opt" onclick="pickIns(this,'commercial')">
+            <input type="radio" name="ins" value="commercial"><label class="opt-label" onclick="void(0)">Commercial / HMO / PPO / POS</label>
+        </div>
+        <div class="radio-opt" onclick="pickIns(this,'medicare-advantage')">
+            <input type="radio" name="ins" value="medicare-advantage"><label class="opt-label" onclick="void(0)">Medicare Advantage</label>
+        </div>
+        <div class="radio-opt" onclick="pickIns(this,'traditional-medicare')">
+            <input type="radio" name="ins" value="traditional-medicare"><label class="opt-label" onclick="void(0)">Traditional Medicare (Parts A & B)</label>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="${backFn}">← Back</button>
+        <button class="btn btn-primary" id="insNext" onclick="goIns()" disabled>Next →</button>
+    </div>`;
+}
+
+function pickIns(el, val) {
+    document.querySelectorAll('[name="ins"]').forEach(r=>r.closest('.radio-opt').classList.remove('selected'));
+    el.classList.add('selected'); el.querySelector('input').checked=true;
+    A.insuranceType=val; $('insNext').disabled=false;
+}
+
+function goIns() {
+    if (A.insuranceType === 'traditional-medicare') {
+        showTradMedicare();
+    } else if (A.insuranceType === 'medicare-advantage') {
+        renderMACheck();
+    } else {
+        step=1; renderEligStep();
+    }
+}
+
+function showTradMedicare() {
+    app().innerHTML = `
+    <div class="info-box blue">
+        <div class="info-title">ℹ️ Traditional Medicare (Parts A & B)</div>
+        <div class="info-text">For Traditional Medicare, follow your current standard check-in protocols.<br><br>Contact your Front Office Manager if you need guidance on Medicare collection procedures.</div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← Back to Start</button>
+    </div>`;
+}
+
+function renderMACheck() {
+    const backFn = visitType==='checkout' ? 'renderCPTSelection()' : 'renderVisitType()';
+    app().innerHTML = `
+    <div class="step-tag">Medicare Advantage Check</div>
+    <div class="q-title">What copay amount is shown?</div>
+    <div class="q-help">Look for the office visit copay on the eligibility screen.</div>
+    <div class="option-list">
+        <div class="radio-opt" onclick="pickMA(this,'zero')">
+            <input type="radio" name="ma">
+            <div><div class="opt-label">$0 (zero) — AND plan name includes "Dual" or shows Medicaid secondary</div></div>
+        </div>
+        <div class="radio-opt" onclick="pickMA(this,'has-copay')">
+            <input type="radio" name="ma">
+            <div><div class="opt-label">Dollar amount ($10, $15, $20, etc.)</div></div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderInsuranceType()">← Back</button>
+        <button class="btn btn-primary" id="maNext" onclick="goMA()" disabled>Next →</button>
+    </div>`;
+}
+
+function pickMA(el,val) {
+    document.querySelectorAll('[name="ma"]').forEach(r=>r.closest('.radio-opt').classList.remove('selected'));
+    el.classList.add('selected'); el.querySelector('input').checked=true;
+    maType=val; $('maNext').disabled=false;
+}
+
+function goMA() {
+    if (maType==='zero') {
+        showDualEligible();
+    } else {
+        step=1; renderEligStep();
+    }
+}
+
+function showDualEligible() {
+    app().innerHTML = `
+    <div class="result-hero info">
+        <div class="result-icon">✓</div>
+        <div class="result-title">Dual Eligible Plan</div>
+        <div class="result-amount">$0</div>
+        <div class="result-msg">No collection needed.<br>This is a Dual Eligible Medicare Advantage plan.</div>
+        <div class="result-detail">Medicaid covers all cost-sharing for dual eligible members. Patient owes nothing.</div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← New Assessment</button>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+//  ELIGIBILITY STEPS (shared by office + checkout)
+//  step 1 = copay/coinsurance fields
+//  step 2 = deductible keywords
+//  step 3 = enter copay $
+//  step 4 = enter annual deductible
+//  step 5 = enter remaining deductible
+// ─────────────────────────────────────────────
+function renderEligStep() {
+    const isCheckout = visitType==='checkout';
+    let html='', title='', stepTag='';
+
+    if (step===1) {
+        stepTag = isCheckout ? 'Step 4 of 5 — Patient Checkout' : 'Step 3 of 4 — Routine Office Visit';
+        title = 'Review Eligibility Fields';
+        html = `
+        <div class="field-block">
+            <div class="field-label">What's in the COPAY field?</div>
+            <div class="option-list">
+                <div class="radio-opt" onclick="pickCopay(this,'dollar')"><input type="radio" name="cop"><label class="opt-label" onclick="void(0)">Dollar amount ($10, $20, $25…)</label></div>
+                <div class="radio-opt" onclick="pickCopay(this,'zero')"><input type="radio" name="cop"><label class="opt-label" onclick="void(0)">$0</label></div>
+                <div class="radio-opt" onclick="pickCopay(this,'blank')"><input type="radio" name="cop"><label class="opt-label" onclick="void(0)">Blank / dash</label></div>
+            </div>
+        </div>
+        <div class="field-block">
+            <div class="field-label">What's in the COINSURANCE field?</div>
+            <div class="option-list">
+                <div class="radio-opt" onclick="pickCoins(this,'pct')"><input type="radio" name="coins"><label class="opt-label" onclick="void(0)">Percentage (20%, 30%…)</label></div>
+                <div class="radio-opt" onclick="pickCoins(this,'zero')"><input type="radio" name="coins"><label class="opt-label" onclick="void(0)">0%</label></div>
+                <div class="radio-opt" onclick="pickCoins(this,'blank')"><input type="radio" name="coins"><label class="opt-label" onclick="void(0)">Blank / dash</label></div>
+            </div>
+        </div>`;
+    } else if (step===2) {
+        stepTag = isCheckout ? 'Step 4 of 5 — Patient Checkout' : 'Step 3 of 4 — Routine Office Visit';
+        title = 'Deductible Keywords Check';
+        html = `<div class="q-help">Review the eligibility response carefully. Check ANY keywords you see:</div>
+        ${['Subject to Deductible','Applies to Deductible','Deductible Applies','Copay After Deductible','Refer to Deductible'].map((kw,i)=>`
+        <label class="check-opt" for="kw${i}" style="margin-bottom:10px">
+            <input type="checkbox" id="kw${i}" onchange="updateKW()">
+            <div class="opt-label">${kw}</div>
+        </label>`).join('')}
+        <label class="check-opt" for="kwNone" style="border-color:var(--green);background:#f0fdf4;margin-top:6px">
+            <input type="checkbox" id="kwNone" onchange="pickKWNone()">
+            <div class="opt-label" style="color:var(--green-dark);font-weight:700">None of the above / Not Applicable</div>
+        </label>`;
+    } else if (step===3) {
+        stepTag = isCheckout ? 'Step 4 of 5 — Patient Checkout' : 'Step 3 of 4 — Routine Office Visit';
+        title = 'Enter Copay Amount';
+        html = `<div class="input-wrap"><span class="dollar">$</span><input class="form-input money-input" type="number" id="amtInput" placeholder="0.00" step="0.01" min="0" autocomplete="off"></div>`;
+    } else if (step===4) {
+        stepTag = isCheckout ? 'Step 4 of 5 — Patient Checkout' : 'Step 3 of 4 — Routine Office Visit';
+        title = 'Annual Deductible';
+        html = `<div class="q-help">What is the ANNUAL deductible shown on the eligibility?</div><div class="input-wrap"><span class="dollar">$</span><input class="form-input money-input" type="number" id="amtInput" placeholder="0.00" step="0.01" min="0" autocomplete="off"></div>`;
+    } else if (step===5) {
+        stepTag = isCheckout ? 'Step 4 of 5 — Patient Checkout' : 'Step 3 of 4 — Routine Office Visit';
+        title = 'Remaining Deductible';
+        html = `<div class="q-help">What is the REMAINING deductible balance shown on the eligibility?</div><div class="input-wrap"><span class="dollar">$</span><input class="form-input money-input" type="number" id="amtInput" placeholder="0.00" step="0.01" min="0" autocomplete="off"></div>`;
+    }
+
+    app().innerHTML = `
+    <div class="step-tag">${stepTag}</div>
+    <div class="q-title">${title}</div>
+    ${html}
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="prevElig()">← Back</button>
+        <button class="btn btn-primary" id="eligNext" onclick="nextElig()" ${step===1||step===2?'disabled':''}>Next →</button>
+    </div>`;
+    if(step===1) syncNextBtn();
+}
+
+function pickCopay(el,val) {
+    document.querySelectorAll('[name="cop"]').forEach(r=>r.closest('.radio-opt').classList.remove('selected'));
+    el.classList.add('selected'); el.querySelector('input').checked=true;
+    A.copayField=val; syncNextBtn();
+}
+function pickCoins(el,val) {
+    document.querySelectorAll('[name="coins"]').forEach(r=>r.closest('.radio-opt').classList.remove('selected'));
+    el.classList.add('selected'); el.querySelector('input').checked=true;
+    A.coinsuranceField=val; syncNextBtn();
+}
+function syncNextBtn() {
+    const btn=$('eligNext'); if(btn) btn.disabled=!(A.copayField&&A.coinsuranceField);
+}
+function updateKW() {
+    const ids=['kw0','kw1','kw2','kw3','kw4'];
+    const anyKW = ids.some(id=>$(id)&&$(id).checked);
+    if(anyKW && $('kwNone')) $('kwNone').checked=false;
+    const anyChecked = anyKW || ($('kwNone')&&$('kwNone').checked);
+    const btn=$('eligNext'); if(btn) btn.disabled=!anyChecked;
+}
+function pickKWNone() {
+    if($('kwNone').checked) {
+        ['kw0','kw1','kw2','kw3','kw4'].forEach(id=>{const e=$(id);if(e)e.checked=false;});
+    }
+    updateKW();
+}
+
+function nextElig() {
+    if (step===1) {
+        step=2; renderEligStep();
+    } else if (step===2) {
+        const noneChecked = $('kwNone')&&$('kwNone').checked;
+        A.hasDeductibleKW = !noneChecked;
+        if (A.copayField==='dollar') { step=3; renderEligStep(); }
+        else { step=4; renderEligStep(); }
+    } else if (step===3) {
+        const v=parseFloat($('amtInput').value);
+        if(isNaN(v)||v<0){alert('Please enter a valid copay amount');return;}
+        A.copayAmount=v;
+        if(A.hasDeductibleKW){step=4;renderEligStep();}
+        else{showCalcResult();}
+    } else if (step===4) {
+        const v=parseFloat($('amtInput').value);
+        if(isNaN(v)||v<0){alert('Please enter a valid deductible amount');return;}
+        A.annualDeductible=v; step=5; renderEligStep();
+    } else if (step===5) {
+        const v=parseFloat($('amtInput').value);
+        if(isNaN(v)||v<0){alert('Please enter a valid remaining balance');return;}
+        A.remainingBalance=v; showCalcResult();
+    }
+}
+
+function prevElig() {
+    if(step===1) renderInsuranceType();
+    else if(step===2){step=1;renderEligStep();}
+    else if(step===3){step=2;renderEligStep();}
+    else if(step===4){step=A.copayField==='dollar'?3:2;renderEligStep();}
+    else if(step===5){step=4;renderEligStep();}
+}
+
+// ─────────────────────────────────────────────
+//  CALCULATION & RESULT
+// ─────────────────────────────────────────────
+function showCalcResult() {
+    const remaining = A.remainingBalance||0;
+    const deductible = A.annualDeductible||0;
+    const copay = A.copayAmount||0;
+    
+    // Office visit uses the selected E/M code fee; checkout uses selected CPT codes
+    const bt = visitType === 'checkout' ? billableTotal() : (officeEMCode ? officeEMCode.fee : 0);
+    calcBillable = bt;
+
+    const isCheckout = visitType==='checkout';
+    const nextLabel = isCheckout ? 'Continue to Checkout →' : 'Done ✓';
+    const nextFn = isCheckout ? 'showAlreadyPaid()' : 'showOfficeDone()';
+
+    let amount=0, box='success', icon='💵', title='', msg='', detail='';
+
+    if (remaining>0) {
+        amount = isCheckout ? Math.min(bt, remaining) : Math.min(bt||0, remaining);
+        box='warning'; icon='⚠️'; title='Deductible Not Met';
+        msg=`Collect billable charges toward deductible.<br>Deductible remaining: <strong>$${remaining.toFixed(2)}</strong>`;
+        detail=`Patient is responsible for the full allowed amount until the deductible is met. Annual deductible: $${deductible.toFixed(2)}`;
+    } else if (copay>0) {
+        amount=copay; title='Deductible Met — Collect Copay';
+        msg=`Deductible has been met. Standard copay applies.`;
+        detail=`Patient met their $${deductible.toFixed(2)} deductible. Standard copay now applies.`;
+    } else {
+        title='Deductible Met — Covered'; icon='✅';
+        msg='No collection needed. Deductible met, no copay or coinsurance.';
+    }
+
+    // For office visit, show estimate note instead of collect amount
+    const amountDisplay = isCheckout
+        ? `<div class="result-amount">$${amount.toFixed(2)}</div>`
+        : `<div class="result-amount" style="font-size:54px">$${amount.toFixed(2)}</div>
+           <div style="font-size:13px;color:var(--muted);margin-top:-8px;margin-bottom:8px">Estimated amount — write on superbill</div>`;
+
+    app().innerHTML = `
+    <div class="result-hero ${box}">
+        <div class="result-icon">${icon}</div>
+        <div class="result-title">${title}</div>
+        ${amountDisplay}
+        <div class="result-msg">${msg}</div>
+        <div class="result-detail">${detail}</div>
+    </div>
+    ${isCheckout ? servicesBreakdown() : ''}
+    ${!isCheckout ? `<div class="info-box blue">
+        <div class="info-title">📋 Routine Office Visit — Estimate Only</div>
+        <div class="info-text">Write <strong>$${amount.toFixed(2)}</strong> on the physical superbill and collect at check-in.<br><br>
+        <em style="font-size:12px;color:#64748b">Estimate based on standard office visit 99214 ($175.00). Adjust if actual visit level differs.</em><br><br>
+        At <strong>checkout</strong>, use <em>Patient Checkout</em> to enter all CPT codes from the superbill, input the amount already collected, and generate the final PDF.</div>
+    </div>` : ''}
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← New Assessment</button>
+        ${isCheckout ? `<button class="btn btn-primary" onclick="${nextFn}">${nextLabel}</button>` : ''}
+    </div>`;
+}
+
+// Office visit done — no PDF, just a clean finish
+function showOfficeDone() {
+    // already shown in calc result — this is a no-op alias
+}
+
+// ─────────────────────────────────────────────
+//  ALREADY PAID SCREEN (CHECKOUT ONLY)
+// ─────────────────────────────────────────────
+function showAlreadyPaid() {
+    const bt = calcBillable || billableTotal();
+    calcBillable = bt;
+
+    app().innerHTML = `
+    <div class="step-tag">Step 5 of 5 — Patient Checkout</div>
+    <div class="q-title">Amount Already Collected</div>
+    <div class="q-help">Enter the amount collected at check-in (from the physical superbill). Enter $0 if nothing was collected.</div>
+
+    <div class="info-box green" style="margin-bottom:20px">
+        <div class="info-title">📋 Check Physical Superbill</div>
+        <div class="info-text">Look at the superbill for the <strong>"Collected at check-in"</strong> note written by the FO. Enter that amount below.</div>
+    </div>
+
+    <div class="field-block">
+        <div class="field-label">Amount Already Collected at Check-in: <span style="color:var(--red)">*REQUIRED</span></div>
+        <div class="input-wrap">
+            <span class="dollar">$</span>
+            <input class="form-input money-input" type="number" id="paidInput" placeholder="0.00" step="0.01" min="0" autocomplete="off" oninput="updatePaidCalc()">
+        </div>
+    </div>
+
+    <div id="paidDisplay" style="display:none">
+        <div class="collect-display">
+            <div class="cd-row">
+                <span class="cd-label">Total Patient Responsibility</span>
+                <span class="cd-val">$${bt.toFixed(2)}</span>
+            </div>
+            <div class="cd-row">
+                <span class="cd-label">Already Collected</span>
+                <span class="cd-val" id="paidAmt">$0.00</span>
+            </div>
+            <hr class="cd-divider">
+            <div class="cd-collect-label">Collect Now</div>
+            <div class="cd-collect-val" id="collectNow">$${bt.toFixed(2)}</div>
+            <div id="refundNote" class="cd-refund-note" style="display:none">⚠️ Patient overpaid — refund required</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="showCalcResult()">← Back</button>
+        <button class="btn btn-primary" id="paidNext" onclick="showPatientInfo()" disabled>Continue to Attestation →</button>
+    </div>`;
+}
+
+function updatePaidCalc() {
+    const raw = $('paidInput').value.trim();
+    if(raw===''){$('paidDisplay').style.display='none';$('paidNext').disabled=true;return;}
+    const paid=parseFloat(raw);
+    if(isNaN(paid)||paid<0){$('paidDisplay').style.display='none';$('paidNext').disabled=true;return;}
+    A.alreadyPaid=paid;
+    const bt=calcBillable;
+    const balance=bt-paid;
+    $('paidAmt').textContent='$'+paid.toFixed(2);
+    const cn=$('collectNow');
+    cn.textContent='$'+Math.abs(balance).toFixed(2)+(balance<0?' (REFUND)':'');
+    cn.className='cd-collect-val'+(balance<0?' overpaid':'');
+    $('refundNote').style.display=balance<0?'block':'none';
+    $('paidDisplay').style.display='block';
+    $('paidNext').disabled=false;
+}
+
+// ─────────────────────────────────────────────
+//  PATIENT INFO + ATTESTATION
+// ─────────────────────────────────────────────
+function showPatientInfo() {
+    const backFn = visitType==='checkout' ? 'showAlreadyPaid()' : 'showCalcResult()';
+    app().innerHTML = `
+    <div class="step-tag">PDF Documentation</div>
+    <div class="q-title">Patient & Staff Information</div>
+    <div class="q-help">This information will appear on the final PDF for chart upload.</div>
+
+    <div class="field-block">
+        <div class="field-label">Patient MRN</div>
+        <input class="form-input" type="text" id="fMRN" placeholder="Enter MRN" autocomplete="off" oninput="valPDF()">
+    </div>
+    <div class="field-block">
+        <div class="field-label">Patient Date of Birth</div>
+        <input class="form-input" type="date" id="fDOB" autocomplete="off" oninput="valPDF()">
+    </div>
+    <div class="field-block">
+        <div class="field-label">Staff Name</div>
+        <input class="form-input" type="text" id="fStaff" placeholder="Your name" autocomplete="off" oninput="valPDF()">
+    </div>
+
+    <label class="check-opt" for="fAttest" style="border-color:var(--amber);background:var(--amber-light);cursor:pointer;margin-top:10px">
+        <input type="checkbox" id="fAttest" onchange="valPDF()">
+        <div style="font-size:14px;font-weight:600;color:#92400e">
+            <strong>Required:</strong> I have reviewed the superbill and informed the patient of their financial responsibility.
+        </div>
+    </label>
+
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="${backFn}">← Back</button>
+        <button class="btn btn-primary" id="pdfBtn" onclick="generatePDF()" disabled>Generate & Download PDF</button>
+    </div>`;
+}
+
+function valPDF() {
+    const ok=$('fMRN').value.trim()&&$('fDOB').value&&$('fStaff').value.trim()&&$('fAttest').checked;
+    $('pdfBtn').disabled=!ok;
+}
+
+// ─────────────────────────────────────────────
+//  PDF GENERATION
+// ─────────────────────────────────────────────
+function generatePDF() {
+    A.patientMRN=$('fMRN').value.trim();
+    A.patientDOB=$('fDOB').value;
+    A.staffName=$('fStaff').value.trim();
+
+    const bt=calcBillable||billableTotal();
+    const alreadyPaid=A.alreadyPaid||0;
+    const balanceDue=bt-alreadyPaid;
+    const ts=new Date().toLocaleString('en-US',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+
+    const insMap={'commercial':'Commercial/HMO/PPO/POS','medicare-advantage':'Medicare Advantage','traditional-medicare':'Traditional Medicare'};
+    const insLabel=insMap[A.insuranceType]||A.insuranceType||'—';
+
+    const serviceRows=selected.map(c=>{
+        const cpt=CPT.find(x=>x.code===c);
+        return `<tr>
+            <td style="padding:9px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:13px;font-weight:600;color:#059669">${cpt.code}</td>
+            <td style="padding:9px 12px;border-bottom:1px solid #eee;font-size:14px">${cpt.desc}</td>
+            <td style="padding:9px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${cpt.prev?'$0.00':'$'+cpt.fee.toFixed(2)}</td>
+            <td style="padding:9px 12px;border-bottom:1px solid #eee;text-align:center"><span style="font-size:11px;background:${cpt.prev?'#10b981':'#3b82f6'};color:white;padding:2px 7px;border-radius:10px;font-weight:700">${cpt.prev?'PREV':'BILL'}</span></td>
+        </tr>`;
+    }).join('');
+
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cost Estimate — ${A.patientMRN}</title>
+    <style>
+        body{font-family:Arial,sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#1a1a1a}
+        .hdr{text-align:center;border-bottom:3px solid #059669;padding-bottom:20px;margin-bottom:28px}
+        .hdr h1{color:#059669;margin:0;font-size:28px}.hdr p{color:#666;margin:4px 0;font-size:14px}
+        .ts{text-align:center;background:#f8f8f8;padding:10px;margin-bottom:24px;font-size:13px;color:#666;border-radius:5px}
+        .sec{margin:22px 0}.sec-title{background:#f0fdf4;padding:9px 14px;font-weight:700;color:#059669;border-left:4px solid #059669;margin-bottom:14px;font-size:14px}
+        .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:14px}
+        .lbl{font-weight:600;color:#666}.val{color:#000}
+        table{width:100%;border-collapse:collapse;margin:12px 0}
+        th{background:#059669;color:white;padding:10px 12px;text-align:left;font-size:13px}
+        td{font-size:14px}
+        .pay-box{background:#f0fdf4;border:2px solid #059669;padding:20px;text-align:center;margin:20px 0;border-radius:10px}
+        .pay-amt{font-size:40px;font-weight:900;color:#059669;font-family:monospace}
+        .attest{background:#fffbeb;border:2px solid #f59e0b;padding:16px;margin:18px 0;border-radius:8px}
+        .attest h3{margin:0 0 8px;color:#92400e;font-size:15px}.attest p{margin:0;color:#78350f;font-size:13px;line-height:1.6}
+        .footer{text-align:center;margin-top:36px;padding-top:18px;border-top:2px solid #eee;font-size:12px;color:#666}
+        .summary-table{width:100%;border-collapse:collapse;margin:12px 0}
+        .summary-table td{padding:10px 14px;border-bottom:1px solid #eee;font-size:14px}
+        .summary-table .s-collect{background:linear-gradient(135deg,#059669,#10b981);color:white;font-size:18px;font-weight:900;font-family:monospace;text-align:right;padding:14px}
+        .summary-table .s-collect-label{background:linear-gradient(135deg,#059669,#10b981);color:white;font-size:16px;font-weight:700;padding:14px}
+    </style></head><body>
+    <div class="hdr">
+        <h1>Synergy Deductible Assist</h1>
+        <p>Patient Cost Estimate Documentation</p>
+        <p>Kokoro Health & Wellness</p>
+    </div>
+    <div class="ts"><strong>Document Generated:</strong> ${ts}</div>
+    <div class="sec"><div class="sec-title">Patient Information</div>
+        <div class="row"><span class="lbl">MRN:</span><span class="val">${A.patientMRN}</span></div>
+        <div class="row"><span class="lbl">Date of Birth:</span><span class="val">${A.patientDOB}</span></div>
+        <div class="row"><span class="lbl">Date of Service:</span><span class="val">${new Date().toLocaleDateString()}</span></div>
+        <div class="row"><span class="lbl">Staff Member:</span><span class="val">${A.staffName}</span></div>
+        <div class="row"><span class="lbl">Visit Type:</span><span class="val">Patient Checkout</span></div>
+    </div>
+    <div class="sec"><div class="sec-title">Insurance Information</div>
+        <div class="row"><span class="lbl">Insurance Type:</span><span class="val">${insLabel}</span></div>
+        ${A.copayAmount?`<div class="row"><span class="lbl">Copay:</span><span class="val">$${A.copayAmount.toFixed(2)}</span></div>`:''}
+        ${A.annualDeductible?`<div class="row"><span class="lbl">Annual Deductible:</span><span class="val">$${A.annualDeductible.toFixed(2)}</span></div>`:''}
+        ${A.remainingBalance!==null&&A.remainingBalance!==undefined?`<div class="row"><span class="lbl">Remaining Deductible:</span><span class="val">$${A.remainingBalance.toFixed(2)}</span></div>`:''}
+    </div>
+    <div class="sec"><div class="sec-title">Services Performed</div>
+        <table><thead><tr><th>CPT Code</th><th>Description</th><th style="text-align:right">Charge</th><th style="text-align:center">Type</th></tr></thead>
+        <tbody>${serviceRows}
+        <tr style="background:#f8f8f8;font-weight:700"><td colspan="2" style="padding:10px 12px;font-size:14px">Total Patient Responsibility</td><td style="padding:10px 12px;text-align:right;font-size:14px">$${bt.toFixed(2)}</td><td></td></tr>
+        </tbody></table>
+    </div>
+    <div class="sec"><div class="sec-title">Payment Summary</div>
+        <table class="summary-table"><tbody>
+        <tr><td><strong>Total Patient Responsibility</strong></td><td style="text-align:right;font-family:monospace;font-weight:700">$${bt.toFixed(2)}</td></tr>
+        <tr><td>Collected at Check-in</td><td style="text-align:right;font-family:monospace">($${alreadyPaid.toFixed(2)})</td></tr>
+        <tr><td class="s-collect-label">COLLECTED AT CHECKOUT</td><td class="s-collect">$${balanceDue.toFixed(2)}</td></tr>
+        <tr style="background:#f0f9ff"><td><strong>TOTAL COLLECTED</strong></td><td style="text-align:right;font-family:monospace;font-weight:900;font-size:16px">$${bt.toFixed(2)}</td></tr>
+        </tbody></table>
+    </div>
+    <div class="attest">
+        <h3>Staff Attestation</h3>
+        <p>☑ I have reviewed the superbill and informed the patient of their financial responsibility.<br>
+        <strong>Staff:</strong> ${A.staffName}<br>
+        <strong>Confirmed:</strong> ${ts}</p>
+    </div>
+    <div class="footer">
+        <strong>Property of Kokoro Health & Wellness</strong><br>
+        14860 Montfort Drive, Suite 140, Dallas, TX 75254<br>
+        For Internal Use Only — Confidential and Proprietary<br>
+        <strong>Generated:</strong> ${ts}
+    </div>
+    </body></html>`;
+
+    const w=window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>w.print(),500);
+
+    app().innerHTML=`
+    <div class="result-hero success">
+        <div class="result-icon">✅</div>
+        <div class="result-title">PDF Generated Successfully</div>
+        <div class="result-amount">$${balanceDue.toFixed(2)}</div>
+        <div class="result-msg">Print dialog has opened. Save as PDF and upload to patient chart.</div>
+        <div class="result-detail">
+            Patient MRN: ${A.patientMRN}<br>
+            Date of Service: ${new Date().toLocaleDateString()}<br>
+            Staff: ${A.staffName}<br>
+            Collected at Check-in: $${alreadyPaid.toFixed(2)}<br>
+            Collected at Checkout: $${balanceDue.toFixed(2)}<br>
+            <strong>Total Collected: $${bt.toFixed(2)}</strong>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="renderStart()">← New Assessment</button>
+        <button class="btn btn-primary" onclick="showPatientInfo()">Generate PDF Again</button>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+renderStart();
+</script>
+</body>
+</html>
