@@ -1,90 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>EP Logic Engine - Functional Version</title>
+    <meta charset="UTF-8">
+    <title>Essential Plan Daily Workflow</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        .step-box { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
-        .status-active { color: green; font-weight: bold; }
-        .status-addon { color: orange; font-weight: bold; }
-        .status-inactive { color: red; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        .hidden { display: none; }
+        :root { --primary: #0f2942; --accent: #00b4d8; --success: #10b981; --bg: #f3f4f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* Progress Tracker */
+        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; position: relative; }
+        .step { text-align: center; flex: 1; z-index: 1; }
+        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
+        .step.active .step-circle { background: var(--accent); color: white; border: 3px solid white; outline: 2px solid var(--accent); }
+        .step.completed .step-circle { background: var(--success); color: white; }
+        
+        /* Results Section */
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .metric-card { background: var(--primary); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .metric-card h1 { margin: 0; font-size: 32px; color: #fbbf24; }
+        
+        .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+        .tab { padding: 12px 20px; cursor: pointer; background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0; font-weight: bold; }
+        .tab.active { background: white; border-top: 4px solid var(--accent); color: var(--accent); }
+
+        /* Tables & Status */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+
+        .btn-row { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn { padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-next { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
 
-    <h1>EP Logic Engine (v0.9 Revert)</h1>
-
-    <div class="step-box" id="step1">
-        <h3>Step 1: Ledger Handshake</h3>
-        <p id="ledger-status">Checking Google Drive Connection...</p>
-        <button onclick="syncLedger()">Sync Master Ledger Now</button>
+<div class="container">
+    <div class="tracker">
+        <div class="step completed"><div class="step-circle">✓</div><small>SIGN IN</small></div>
+        <div class="step completed"><div class="step-circle">✓</div><small>LEDGER</small></div>
+        <div class="step completed"><div class="step-circle">✓</div><small>SCHEDULES</small></div>
+        <div class="step active"><div class="step-circle">4</div><small>RESULTS</small></div>
+        <div class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
+        <div class="step"><div class="step-circle">6</div><small>COMPLETE</small></div>
     </div>
 
-    <div class="step-box" id="step2">
-        <h3>Step 2: Upload Daily eCW Schedule</h3>
-        <input type="file" id="csvFile" accept=".csv">
-        <button onclick="processData()">Run VLOOKUP Logic</button>
+    <div class="metrics-grid">
+        <div class="metric-card"><h1>4</h1>ADDISON SUPERBILLS</div>
+        <div class="metric-card"><h1>2</h1>ABRAMS SUPERBILLS</div>
+        <div class="metric-card"><h1>2</h1>ECW ACTIONS</div>
+        <div class="metric-card"><h1>2</h1>EXPIRING (7 DAYS)</div>
     </div>
 
-    <div class="step-box" id="step3">
-        <h3>Step 3: Audit Results</h3>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <th>MRN</th>
-                    <th>Patient Name</th>
-                    <th>Ledger Status</th>
-                    <th>Today's Charge</th>
-                    <th>Action Required</th>
-                </tr>
-            </thead>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('addison')">🏥 ADDISON 4</div>
+        <div class="tab" onclick="showTab('inactive')">⚠️ INACTIVE 2</div>
+        <div class="tab" onclick="showTab('expiring')">🔔 EXPIRING 2</div>
+    </div>
+
+    <div id="tab-addison" class="tab-content">
+        <table>
+            <thead><tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr></thead>
             <tbody>
-                </tbody>
+                <tr><td>MRN001</td><td>Maria Santos</td><td>Annual</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td>MRN003</td><td>Linda Chen</td><td>Annual</td><td><span class="status-badge" style="background:#fef9c3; color:#854d0e;">Add-On ($129)</span></td></tr>
+            </tbody>
         </table>
     </div>
 
-    <script>
-        // Placeholder for the Master Ledger Data from your Handshake
-        let masterLedger = [
-            { mrn: "102", name: "Maria Santos", status: "Active", lastVisit: "None" },
-            { mrn: "105", name: "Linda Chen", status: "Active", lastVisit: "2026-01-15" },
-            { mrn: "MRN005", name: "Diane Williams", status: "Inactive", lastVisit: "2025-12-01" }
-        ];
+    <div id="tab-inactive" class="tab-content" style="display:none">
+        <table>
+            <thead><tr><th>MRN</th><th>NAME</th><th>ECW TASKS</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>MRN005</td><td>Diane Williams</td>
+                    <td><input type="checkbox"> UNCHECK SELF-PAY | <input type="checkbox"> REINSTATE PAYER | <input type="checkbox"> DELETE NOTE</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-        function syncLedger() {
-            document.getElementById('ledger-status').innerHTML = "✅ Ledger Synced with Google Drive (342 Members Found)";
-        }
+    <div id="tab-expiring" class="tab-content" style="display:none">
+        <table>
+            <thead><tr><th>MRN</th><th>NAME</th><th>RENEWAL</th><th>COLLECT</th></tr></thead>
+            <tbody>
+                <tr><td>MRN002</td><td>James Okafor</td><td>Mar 31, 2026</td><td><strong>$329.00</strong></td></tr>
+                <tr><td>MRN015</td><td>Edwins Herrera</td><td>Mar 27, 2026</td><td><strong>$1,000.00</strong></td></tr>
+            </tbody>
+        </table>
+    </div>
 
-        function processData() {
-            const tableBody = document.querySelector('#resultsTable tbody');
-            tableBody.innerHTML = ""; // Clear old results
+    <div class="btn-row">
+        <button class="btn btn-primary" style="background:#6b7280">← BACK TO SCHEDULES</button>
+        <button class="btn btn-next">PROCEED TO ATTESTATION →</button>
+    </div>
+</div>
 
-            // This simulates the "VLOOKUP" logic comparing Schedule to Ledger
-            masterLedger.forEach(pt => {
-                let charge = pt.status === "Active" ? "$0.00" : "N/A";
-                let action = pt.status === "Active" ? "Proceed" : "CHART CLEANUP REQUIRED";
-                
-                // Logic for "Add-on" if they visited this quarter
-                if (pt.lastVisit !== "None" && pt.status === "Active") {
-                    charge = "$129.00";
-                    action = "Collect Add-on Fee";
-                }
-
-                let row = `<tr>
-                    <td>${pt.mrn}</td>
-                    <td>${pt.name}</td>
-                    <td class="status-${pt.status.toLowerCase()}">${pt.status}</td>
-                    <td>${charge}</td>
-                    <td>${action}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
-            alert("VLOOKUP Complete: Results populated below.");
-        }
-    </script>
+<script>
+    function showTab(name) {
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + name).style.display = 'block';
+        event.currentTarget.classList.add('active');
+    }
+</script>
 </body>
 </html>
