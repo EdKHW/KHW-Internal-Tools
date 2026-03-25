@@ -10,10 +10,10 @@
         :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f9; }
         body { font-family: 'Barlow', sans-serif; background: var(--bg); margin: 0; color: #1a2e44; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .topbar { background: var(--navy); color: white; padding: 10px 30px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        .topbar { background: var(--navy); color: white; padding: 10px 30px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; min-height: 70px; }
         .logo-area { display: flex; align-items: center; gap: 15px; }
-        .logo-circle { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--gold); }
-        .logo-circle img { width: 100%; height: auto; }
+        .logo-circle { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--gold); color: var(--navy); font-weight: bold; }
+        .logo-circle img { width: 100%; height: auto; display: block; }
         
         .tracker { display: flex; justify-content: center; background: white; padding: 15px; border-bottom: 1px solid #dbe5ee; }
         .step { margin: 0 12px; font-size: 0.75rem; font-weight: 700; color: #cbd5e0; text-transform: uppercase; }
@@ -24,9 +24,8 @@
         .card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 40px; text-align: center; position: relative; min-height: 450px; }
         
         .nav-back { position: absolute; top: 20px; left: 20px; background: #f0f4f8; border: none; color: #5a7184; padding: 8px 15px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .nav-back:hover { background: #dbe5ee; color: var(--navy); }
 
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; width: 280px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; width: 280px; display: inline-block; }
         button.primary { background: var(--teal); color: white; border: none; padding: 15px 40px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
         
         .tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 2px solid #eee; }
@@ -41,7 +40,6 @@
         .bg-warning { background: #fffaf0; color: #744210; }
         .bg-error { background: #fff5f5; color: #822727; }
 
-        .legal-notice { font-size: 0.65rem; color: #999; margin-top: 30px; line-height: 1.4; border-top: 1px solid #eee; padding-top: 15px; }
         footer { background: #f8f9fa; text-align: center; padding: 20px; font-size: 0.75rem; color: #666; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
@@ -49,7 +47,9 @@
 
 <div class="topbar">
     <div class="logo-area">
-        <div class="logo-circle"><img src="photo-01.jpg" alt="Logo"></div>
+        <div class="logo-circle" id="logoFrame">
+            <img src="photo-01.jpg" alt="K" onerror="this.style.display='none'; document.getElementById('logoFrame').innerHTML='K';">
+        </div>
         <div><strong>KOKORO HEALTH & WELLNESS</strong><br><small style="color:var(--gold)">EPCC COMMAND CENTER</small></div>
     </div>
     <div id="sessionUser" style="font-size:0.75rem; font-weight:600;">UNAUTHORIZED</div>
@@ -61,4 +61,147 @@
     <div class="step" id="s3">Analysis</div>
     <div class="step" id="s4">Financials</div>
     <div class="step" id="s5">Attest</div>
-    <div class="step"
+    <div class="step" id="s6">Done</div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div id="step1">
+            <h2>Station Login</h2>
+            <input type="text" id="userName" placeholder="Your Full Name"><br>
+            <select id="clinic">
+                <option value="">Select Clinic Location</option>
+                <option value="addison">Addison Clinic</option>
+                <option value="abrams">Abrams Clinic</option>
+            </select><br>
+            <input type="password" id="pass" placeholder="Access Code"><br><br>
+            <button class="primary" onclick="checkAuth()">Unlock Station</button>
+        </div>
+
+        <div id="step2" style="display:none;">
+            <button class="nav-back" onclick="goStep(1)">← Logout</button>
+            <h2>Data Synchronization</h2>
+            <div id="syncStatus" style="max-width: 400px; margin: 20px auto; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px;"></div>
+            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Pre-Visit Analysis →</button>
+        </div>
+
+        <div id="step4" style="display:none;">
+            <button class="nav-back" onclick="goStep(2)">← Back to Sync</button>
+            <div class="tabs">
+                <button class="tab-btn active" id="t1" onclick="switchTab('active')">ACTIVE ($0)</button>
+                <button class="tab-btn" id="t2" onclick="switchTab('warning')">BILLABLE ($129)</button>
+                <button class="tab-btn" id="t3" onclick="switchTab('error')">NO MATCH</button>
+            </div>
+            <div id="tabContent"></div><br>
+            <button class="primary" onclick="goStep(5)">Proceed to Attestation →</button>
+        </div>
+
+        <div id="step5" style="display:none;">
+            <button class="nav-back" onclick="goStep(4)">← Back to Analysis</button>
+            <h2>Pre-Visit Attestation</h2>
+            <p>I, <strong id="attestName"></strong>, certify this audit is complete:</p>
+            <div style="text-align:left; background:#fffbf0; padding:20px; border-radius:8px; margin:20px auto; max-width:500px; border: 1px solid var(--gold);">
+                <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="check1"> Cross-referenced eCW Export vs Ledger.</label>
+                <label style="display:block;"><input type="checkbox" id="check3"> Syncing PDF Superbills to Clinic Space.</label>
+            </div>
+            <button class="primary" onclick="signOff()">Apply Digital Signature</button>
+        </div>
+
+        <div id="step6" style="display:none;">
+            <h1 style="color:var(--success)">✔ WORKFLOW RECORDED</h1>
+            <p id="finalMsg"></p>
+            <button class="primary" onclick="location.reload()">New Session</button>
+        </div>
+    </div>
+</div>
+
+<footer>&copy; 2026 Kokoro Health & Wellness, Inc.</footer>
+
+<script>
+    const SECRET = "Trinity@50Panda";
+    const URLS = {
+        master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
+        addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
+        abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
+    };
+
+    let session = { user: '', clinic: '', data: {active:[], warning:[], error:[]} };
+    let raw = { master:[], current:[] };
+
+    function checkAuth() {
+        const u = document.getElementById('userName').value;
+        const c = document.getElementById('clinic').value;
+        const p = document.getElementById('pass').value;
+        if(!u || !c || p !== SECRET) { alert("Invalid Credentials"); return; }
+        session.user = u; session.clinic = c;
+        document.getElementById('sessionUser').innerText = `TEAM LEAD: ${u.toUpperCase()} | ${c.toUpperCase()}`;
+        document.getElementById('attestName').innerText = u;
+        goStep(2); syncData();
+    }
+
+    async function syncData() {
+        const statusDiv = document.getElementById('syncStatus');
+        statusDiv.innerHTML = "";
+        const targets = ['master', session.clinic];
+        for(let k of targets) {
+            try {
+                const r = await fetch(URLS[k]);
+                const csv = await r.text();
+                const d = Papa.parse(csv, {header:true, skipEmptyLines:true}).data;
+                if(k === 'master') raw.master = d; else raw.current = d;
+                statusDiv.innerHTML += `<div style="color:var(--success)">✅ ${k.toUpperCase()} Synced</div>`;
+            } catch(e) { statusDiv.innerHTML += `<div style="color:var(--error)">❌ ${k.toUpperCase()} Error</div>`; }
+        }
+        document.getElementById('btnProcess').style.display = 'inline-block';
+    }
+
+    function processData() {
+        session.data = {active:[], warning:[], error:[]};
+        const today = new Date();
+        raw.current.forEach(p => {
+            const mrn = p['Pat #']?.trim();
+            if(!mrn) return;
+            const match = raw.master.find(m => m['MRN']?.trim() === mrn);
+            if(!match) {
+                session.data.error.push(p);
+            } else {
+                const nextPay = new Date(match['Next_Payment_Date']);
+                const daysUntil = (nextPay - today) / 86400000;
+                if(daysUntil <= 7) session.data.warning.push({...p, ...match});
+                else session.data.active.push({...p, ...match});
+            }
+        });
+        switchTab('active'); goStep(4);
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t === 'active' ? 't1' : (t === 'warning' ? 't2' : 't3')).classList.add('active');
+        let h = `<table><tr><th>Patient</th><th>MRN</th><th>Fee</th></tr>`;
+        session.data[t].forEach(r => {
+            const b = t === 'active' ? 'bg-active' : (t === 'warning' ? 'bg-warning' : 'bg-error');
+            const fee = t === 'active' ? '$0' : (t === 'warning' ? '$129' : 'N/A');
+            h += `<tr><td>${r['Pat F Name']} ${r['Pat L Name']}</td><td>${r['Pat #']}</td><td><span class="badge ${b}">${fee}</span></td></tr>`;
+        });
+        document.getElementById('tabContent').innerHTML = h + `</table>`;
+    }
+
+    function goStep(n) {
+        for(let i=1; i<=6; i++) {
+            const el = document.getElementById('step'+i);
+            if(el) el.style.display = (i === n) ? 'block' : 'none';
+            const s = document.getElementById('s'+i);
+            if(s) { s.classList.remove('active','done'); if(i<n) s.classList.add('done'); if(i===n) s.classList.add('active'); }
+        }
+    }
+
+    function signOff() {
+        if(!document.getElementById('check1').checked || !document.getElementById('check3').checked) {
+            alert("Attestation required."); return;
+        }
+        document.getElementById('finalMsg').innerText = `Workflow finalized by ${session.user} at ${new Date().toLocaleTimeString()}.`;
+        goStep(6);
+    }
+</script>
+</body>
+</html>
