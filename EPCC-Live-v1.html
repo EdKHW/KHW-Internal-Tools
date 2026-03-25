@@ -6,70 +6,63 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; --success: #10b981; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
-        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 40px; color: var(--navy); }
+        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* 1. Progress Tracker Style (Restored) */
-        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; width: 100%; }
-        .step { text-align: center; flex: 1; position: relative; }
-        .step:not(:last-child):after { content: ''; position: absolute; top: 17px; left: 50%; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
-        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; position: relative; z-index: 1; }
+        /* FORCE HORIZONTAL TRACKER */
+        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 50px; border-bottom: 1px solid #eee; padding-bottom: 20px; width: 100%; }
+        .step { flex: 1; text-align: center; min-width: 100px; }
+        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
         .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
+        .step small { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #9ca3af; }
 
-        /* 2. Dashboard Metrics (Restored) */
+        /* Metrics */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
         .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
         .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
 
-        /* 3. Button Styles */
-        .btn-primary { background: var(--teal); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; background: #fafafa; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .btn-start { background: var(--teal); color: white; border: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
         
-        .no-print { display: block; }
-        @media print { .no-print { display: none; } .container { box-shadow: none; border: none; } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="tracker no-print">
-        <div class="step completed"><div class="step-circle">✓</div><small>SIGN IN</small></div>
-        <div class="step completed"><div class="step-circle">✓</div><small>LEDGER</small></div>
-        <div class="step active"><div class="step-circle">3</div><small>SCHEDULES</small></div>
-        <div class="step"><div class="step-circle">4</div><small>RESULTS</small></div>
-        <div class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
-        <div class="step"><div class="step-circle">6</div><small>COMPLETE</small></div>
+    <div class="tracker">
+        <div id="s1" class="step active"><div class="step-circle">1</div><small>SIGN IN</small></div>
+        <div id="s2" class="step"><div class="step-circle">2</div><small>LEDGER</small></div>
+        <div id="s3" class="step"><div class="step-circle">3</div><small>SCHEDULES</small></div>
+        <div id="s4" class="step"><div class="step-circle">4</div><small>RESULTS</small></div>
+        <div id="s5" class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
+        <div id="s6" class="step"><div class="step-circle">6</div><small>COMPLETE</small></div>
     </div>
 
-    <div id="setupView" style="text-align: center; padding: 50px 0;">
-        <h1 style="color: var(--navy);">Essential Plan Daily Workflow</h1>
-        <p>Select your clinic to begin today's membership audit.</p>
-        <div style="margin-top: 20px;">
-            <select id="clinic" style="padding: 12px; width: 250px; font-size: 16px; border-radius: 6px;">
-                <option value="addison">Addison Clinic</option>
-                <option value="abrams">Abrams Clinic</option>
-            </select>
-            <button class="btn-primary" onclick="startSession()">START AUDIT →</button>
-        </div>
+    <div id="view-setup" style="text-align: center;">
+        <h1 style="margin-bottom: 10px;">EPCC Command Center</h1>
+        <p style="color: #64748b; margin-bottom: 30px;">Select clinic location to sync live data.</p>
+        <select id="clinicSelect" style="padding: 12px; width: 300px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <option value="addison">Addison Clinic</option>
+            <option value="abrams">Abrams Clinic</option>
+        </select><br>
+        <button class="btn-start" onclick="startAudit()">START SESSION →</button>
     </div>
 
-    <div id="resultsView" style="display:none;">
+    <div id="view-results" class="hidden">
         <div class="metrics-grid">
-            <div class="metric-card"><h1 id="count-bills">0</h1>SUPERBILLS</div>
-            <div class="metric-card"><h1 id="count-ecw">0</h1>ECW ACTIONS</div>
-            <div class="metric-card"><h1 id="count-exp">0</h1>EXPIRING</div>
+            <div class="metric-card"><h1 id="m-bills">0</h1>SUPERBILLS</div>
+            <div class="metric-card"><h1 id="m-ecw">0</h1>ECW ACTIONS</div>
+            <div class="metric-card"><h1 id="m-exp">0</h1>EXPIRING</div>
             <div class="metric-card"><h1>03/25</h1>DOS</div>
         </div>
-        
-        <table style="width:100%; border-collapse: collapse;">
+
+        <table>
             <thead>
-                <tr style="background:#f8fafc; border-bottom: 2px solid #e5e7eb;">
-                    <th style="padding:12px; text-align:left;">MRN</th>
-                    <th style="padding:12px; text-align:left;">NAME</th>
-                    <th style="padding:12px; text-align:left;">PLAN</th>
-                    <th style="padding:12px; text-align:left;">STATUS</th>
-                </tr>
+                <tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr>
             </thead>
             <tbody id="ledgerBody"></tbody>
         </table>
@@ -77,40 +70,55 @@
 </div>
 
 <script>
-    // These are your Live Handshake Links
     const URLS = {
         master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
         addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    async function startSession() {
-        const clinic = document.getElementById('clinic').value;
-        const res1 = await fetch(URLS.master);
-        const masterData = Papa.parse(await res1.text(), {header:true}).data;
-        const res2 = await fetch(URLS[clinic]);
-        const scheduleData = Papa.parse(await res2.text(), {header:true}).data;
+    async function startAudit() {
+        // 1. UI Transition
+        const clinic = document.getElementById('clinicSelect').value;
+        document.getElementById('view-setup').classList.add('hidden');
+        document.getElementById('view-results').classList.remove('hidden');
+        
+        // Update Tracker
+        document.getElementById('s1').className = "step completed";
+        document.getElementById('s2').className = "step completed";
+        document.getElementById('s3').className = "step completed";
+        document.getElementById('s4').className = "step active";
 
-        let html = "";
-        let bills = 0;
+        // 2. Fetch Data
+        try {
+            const resMaster = await fetch(URLS.master);
+            const masterData = Papa.parse(await resMaster.text(), {header:true}).data;
+            const resClinic = await fetch(URLS[clinic]);
+            const scheduleData = Papa.parse(await resClinic.text(), {header:true}).data;
 
-        scheduleData.forEach(p => {
-            const member = masterData.find(m => m['MRN'] === p['Pat #']);
-            if(member) {
-                bills++;
-                html += `<tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding:12px;">${p['Pat #']}</td>
-                    <td style="padding:12px;">${p['Patient Name'] || 'Member'}</td>
-                    <td style="padding:12px;">${member['Plan']}</td>
-                    <td style="padding:12px;"><span style="color:green; font-weight:bold;">Active</span></td>
-                </tr>`;
-            }
-        });
+            let html = "";
+            let count = 0;
 
-        document.getElementById('ledgerBody').innerHTML = html;
-        document.getElementById('count-bills').innerText = bills;
-        document.getElementById('setupView').style.display = 'none';
-        document.getElementById('resultsView').style.display = 'block';
+            scheduleData.forEach(p => {
+                const mrn = p['Pat #'] || p['MRN'];
+                if(!mrn) return;
+                
+                const member = masterData.find(m => m['MRN'] === mrn);
+                if(member) {
+                    count++;
+                    html += `<tr>
+                        <td>${mrn}</td>
+                        <td>${p['Patient Name'] || 'Member'}</td>
+                        <td>${member['Plan'] || 'EP Standard'}</td>
+                        <td><b style="color:green">Active</b></td>
+                    </tr>`;
+                }
+            });
+
+            document.getElementById('ledgerBody').innerHTML = html;
+            document.getElementById('m-bills').innerText = count;
+        } catch (e) {
+            alert("Error syncing data. Check Google Sheet links.");
+        }
     }
 </script>
 </body>
