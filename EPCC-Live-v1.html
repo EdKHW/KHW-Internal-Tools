@@ -3,135 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPCC - Command Center</title>
+    <title>EPCC - Command Center v2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --teal: #008080; --dark: #2c3e50; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --gold: #f39c12; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
-        
-        /* HEADER UI */
-        .header { background: #001f3f; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
-        .header-title { font-weight: bold; letter-spacing: 1px; }
-
-        /* PROGRESS BAR */
+        :root { --teal: #008080; --dark: #001f3f; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --gold: #f39c12; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; color: #333; }
+        .header { background: var(--dark); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
         .nav-steps { display: flex; justify-content: center; background: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .step-item { margin: 0 15px; text-align: center; color: #ccc; font-size: 0.8rem; font-weight: bold; }
         .step-item.active { color: var(--teal); }
         .step-circle { width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; }
         .step-item.active .step-circle { border-color: var(--teal); background: #e0f2f1; color: var(--teal); }
-
-        /* MAIN CONTAINER */
-        .main-card { background: white; max-width: 900px; margin: 40px auto; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        h2 { text-transform: uppercase; letter-spacing: 1px; color: #001f3f; margin-bottom: 5px; }
-        
-        /* INPUTS */
-        .input-group { margin: 25px 0; }
-        input { width: 300px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin: 5px; }
-        button { background: #4dd0e1; color: white; border: none; padding: 15px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        button:hover { background: var(--teal); transform: translateY(-2px); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* STATUS BOX */
-        .sync-box { border: 2px dashed #eee; padding: 40px; border-radius: 12px; margin: 20px 0; background: #fafafa; }
-        #syncMsg { font-weight: bold; color: var(--teal); margin-top: 10px; }
-        
+        .main-card { background: white; max-width: 900px; margin: 40px auto; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--teal); }
+        .sync-box, .upload-box { border: 2px dashed #e0e0e0; padding: 40px; border-radius: 12px; margin: 20px 0; background: #fafafa; transition: 0.3s; }
+        .upload-box:hover { border-color: var(--teal); background: #f0fdfa; }
         .step-content { display: none; }
         .step-content.active { display: block; }
-        .err { color: var(--error); font-size: 0.9rem; margin-top: 10px; }
+        button { background: #4dd0e1; color: white; border: none; padding: 15px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        button:disabled { background: #ccc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+        th { background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        .status-pill { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
+        .match { background: #d4edda; color: #155724; }
+        .no-match { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="header-title">EPCC — ESSENTIAL PLAN<br><span style="font-size:0.7rem; font-weight: normal;">COMMAND CENTER | KOKORO HEALTH & WELLNESS</span></div>
+    <div>EPCC — ESSENTIAL PLAN<br><span style="font-size:0.7rem; opacity: 0.8;">COMMAND CENTER | KOKORO HEALTH & WELLNESS</span></div>
 </div>
 
 <div class="nav-steps">
-    <div class="step-item active" id="nav1"><div class="step-circle">✓</div>SIGN IN</div>
-    <div class="step-item" id="nav2"><div class="step-circle">2</div>LEDGER</div>
-    <div class="step-item" id="nav3"><div class="step-circle">3</div>SCHEDULES</div>
+    <div class="step-item active" id="nav1"><div class="step-circle">1</div>SIGN IN</div>
+    <div class="step-item" id="nav2"><div class="step-circle">2</div>SYNC</div>
+    <div class="step-item" id="nav3"><div class="step-circle">3</div>SCHEDULE</div>
+    <div class="step-item" id="nav4"><div class="step-circle">4</div>RESULTS</div>
 </div>
 
 <div class="main-card">
-    
     <div id="step1" class="step-content active">
         <h2>Team Lead Sign-In</h2>
-        <p style="color:#666;">Enter credentials to unlock the Command Center</p>
-        <div class="input-group">
-            <input type="text" id="tlName" placeholder="Your Name"><br>
-            <input type="password" id="accessCode" placeholder="Access Code">
-        </div>
-        <div id="loginErr" class="err"></div>
-        <button onclick="startSession()">Start Session</button>
+        <input type="password" id="accessCode" placeholder="Enter Access Code" style="padding:12px; width:250px; border-radius:8px; border:1px solid #ddd;"><br><br>
+        <button onclick="startSession()">Unlock Portal</button>
     </div>
 
     <div id="step2" class="step-content">
-        <h2>Live Membership Sync</h2>
-        <p>Welcome back, <span id="userName" style="color:var(--teal); font-weight:bold;"></span></p>
-        
+        <h2>Membership Ledger Sync</h2>
         <div class="sync-box">
-            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055644.png" width="50" style="opacity: 0.5;">
-            <div id="syncMsg">Initializing Cloud Handshake...</div>
-            <div id="syncDetail" style="font-size: 0.8rem; color: #999; margin-top:5px;">Connecting to Google Secure Server...</div>
+            <div id="syncMsg" style="font-weight:bold; color:var(--teal);">Connecting to Google Sheets...</div>
         </div>
+        <button id="nextToStep3" disabled onclick="showStep(3)">Next: Process Schedule →</button>
+    </div>
 
-        <div style="display:flex; justify-content: center; gap: 10px;">
-            <button onclick="location.reload()" style="background:#95a5a6;">← Back</button>
-            <button id="nextBtn" disabled onclick="alert('Ready for Step 3: eCW Schedule Upload!')">Next: Upload Schedules →</button>
+    <div id="step3" class="step-content">
+        <h2>eCW Schedule Analysis</h2>
+        <p>Upload the Daily Schedule CSV from eCW</p>
+        <div class="upload-box" id="dropZone">
+            <input type="file" id="csvFile" accept=".csv" style="display:none;">
+            <div onclick="document.getElementById('csvFile').click()" style="cursor:pointer;">
+                <span style="font-size:40px;">📂</span><br>
+                <strong>Click to Upload eCW CSV</strong><br>
+                <span style="font-size:0.8rem; color:#888;">Matches by Pat # and Pat Birthdate</span>
+            </div>
         </div>
     </div>
 
+    <div id="step4" class="step-content">
+        <h2>Verification Results</h2>
+        <div id="resultsTableArea"></div>
+        <br>
+        <button onclick="showStep(3)" style="background:#95a5a6;">Restart Analysis</button>
+    </div>
 </div>
 
 <script>
     const SECRET = "Trinity@50Panda";
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv";
+    const GOOGLE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv";
     
-    let masterLedgerData = [];
+    let masterLedger = [];
 
     function startSession() {
-        const name = document.getElementById('tlName').value.trim();
-        const code = document.getElementById('accessCode').value.trim();
-        
-        if (!name) { document.getElementById('loginErr').textContent = "Name required."; return; }
-        if (code !== SECRET) { document.getElementById('loginErr').textContent = "Access Denied."; return; }
-
-        document.getElementById('userName').textContent = name;
-        showStep(2);
-        syncWithGoogle();
+        if (document.getElementById('accessCode').value === SECRET) {
+            showStep(2);
+            syncLedger();
+        } else { alert("Wrong Code"); }
     }
 
-    async function syncWithGoogle() {
-        const msg = document.getElementById('syncMsg');
-        const detail = document.getElementById('syncDetail');
-        const btn = document.getElementById('nextBtn');
-
+    async function syncLedger() {
         try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error();
-            const data = await response.text();
-            
-            // Logic: Success!
-            masterLedgerData = data; 
-            msg.textContent = "Live Sync: ACTIVE";
-            msg.style.color = "var(--success)";
-            detail.textContent = "Master Ledger connection verified. Data ready.";
-            btn.disabled = false;
-            btn.style.background = "#4dd0e1";
-            
-        } catch (err) {
-            msg.textContent = "Connection Failed";
-            msg.style.color = "var(--error)";
-            detail.textContent = "Check internet or Google Sheet permissions.";
-        }
+            const resp = await fetch(GOOGLE_URL);
+            const text = await resp.text();
+            Papa.parse(text, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    masterLedger = results.data;
+                    document.getElementById('syncMsg').innerHTML = "✅ Live Sync: ACTIVE<br><small>Master Ledger Linked Successfully</small>";
+                    document.getElementById('nextToStep3').disabled = false;
+                }
+            });
+        } catch (e) { document.getElementById('syncMsg').innerText = "Sync Failed."; }
     }
 
-    function showStep(num) {
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                processComparison(results.data);
+            }
+        });
+    });
+
+    function processComparison(scheduleData) {
+        let html = `<table><tr><th>Time</th><th>Patient</th><th>Pat #</th><th>DOB</th><th>Status</th></tr>`;
+        
+        scheduleData.forEach(row => {
+            const scheduleMRN = row['Pat #']?.trim();
+            const scheduleDOB = row['Pat Birthdate']?.trim();
+            
+            // Match Logic: Check Google Ledger for MRN and DOB
+            const match = masterLedger.find(m => 
+                (m['MRN']?.trim() === scheduleMRN) && 
+                (m['DOB']?.trim() === scheduleDOB)
+            );
+
+            const statusClass = match ? 'match' : 'no-match';
+            const statusText = match ? 'ACTIVE MEMBER' : 'NOT FOUND / ADD-ON';
+            const patName = `${row['Pat F Name'] || ''} ${row['Pat L Name'] || ''}`;
+
+            html += `<tr>
+                <td>${row['Time'] || '--'}</td>
+                <td>${patName}</td>
+                <td>${scheduleMRN}</td>
+                <td>${scheduleDOB}</td>
+                <td><span class="status-pill ${statusClass}">${statusText}</span></td>
+            </tr>`;
+        });
+
+        html += `</table>`;
+        document.getElementById('resultsTableArea').innerHTML = html;
+        showStep(4);
+    }
+
+    function showStep(n) {
         document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + num).classList.add('active');
-        document.getElementById('nav' + num).classList.add('active');
+        document.getElementById('step' + n).classList.add('active');
+        document.getElementById('nav' + n).classList.add('active');
     }
 </script>
-
 </body>
 </html>
