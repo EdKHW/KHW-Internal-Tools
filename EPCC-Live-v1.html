@@ -6,116 +6,90 @@
     <title>EPCC — Kokoro Health & Wellness</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap');
-        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f9; }
-        body { font-family: 'Barlow', sans-serif; background: var(--bg); margin: 0; color: #1a2e44; display: flex; flex-direction: column; min-height: 100vh; }
+        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --success: #27ae60; --bg: #f4f6f9; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .topbar { background: var(--navy); color: white; padding: 10px 30px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        .topbar { background: var(--navy); color: white; padding: 15px 30px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
         .logo-area { display: flex; align-items: center; gap: 15px; }
-        .logo-circle { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--gold); }
-        .logo-circle img { width: 100%; height: auto; }
+        .logo-circle { width: 40px; height: 40px; background: white; border-radius: 50%; overflow: hidden; border: 2px solid var(--gold); }
+        .logo-circle img { width: 100%; height: 100%; object-fit: cover; }
         
-        .tracker { display: flex; justify-content: center; background: white; padding: 15px; border-bottom: 1px solid #dbe5ee; }
-        .step { margin: 0 12px; font-size: 0.75rem; font-weight: 700; color: #cbd5e0; text-transform: uppercase; }
+        .tracker { display: flex; justify-content: center; background: white; padding: 10px; border-bottom: 1px solid #ddd; gap: 20px; font-size: 0.7rem; font-weight: bold; color: #ccc; }
         .step.active { color: var(--teal); border-bottom: 2px solid var(--teal); }
-        .step.done { color: var(--success); }
 
-        .container { flex: 1; max-width: 1000px; margin: 30px auto; width: 95%; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 40px; text-align: center; position: relative; min-height: 450px; }
+        .container { flex: 1; padding: 40px 20px; }
+        .card { background: white; max-width: 500px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; position: relative; }
         
-        /* THE BACK BUTTON */
-        .nav-back { position: absolute; top: 20px; left: 20px; background: #f0f4f8; border: none; color: #5a7184; padding: 8px 15px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .nav-back:hover { background: #dbe5ee; color: var(--navy); }
-
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; width: 280px; }
-        button.primary { background: var(--teal); color: white; border: none; padding: 15px 40px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button.primary { width: 100%; background: var(--teal); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .nav-back { position: absolute; top: 10px; left: 10px; background: none; border: 1px solid #ddd; font-size: 0.6rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
         
-        .tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 2px solid #eee; }
-        .tab-btn { padding: 12px 20px; cursor: pointer; border: none; background: none; font-weight: 600; color: #666; font-size: 0.85rem; }
-        .tab-btn.active { color: var(--teal); border-bottom: 3px solid var(--teal); }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #f0f0f0; text-align: left; }
-        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
-        .bg-active { background: #e6fffa; color: #234e52; }
-        .bg-warning { background: #fffaf0; color: #744210; }
-        .bg-error { background: #fff5f5; color: #822727; }
-
-        footer { background: #f8f9fa; text-align: center; padding: 20px; font-size: 0.75rem; color: #666; border-top: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; font-size: 0.8rem; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; }
+        .footer-legal { font-size: 0.6rem; color: #999; margin-top: 20px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
 <div class="topbar">
     <div class="logo-area">
-        <div class="logo-circle"><img src="photo-01.jpg" alt="Logo"></div>
+        <div class="logo-circle"><img src="photo-01.jpg" alt="K" onerror="this.src='https://via.placeholder.com/40'"></div>
         <div><strong>KOKORO HEALTH & WELLNESS</strong><br><small style="color:var(--gold)">EPCC COMMAND CENTER</small></div>
     </div>
-    <div id="sessionUser" style="font-size:0.75rem; font-weight:600;">UNAUTHORIZED</div>
+    <div id="sessionUser" style="font-size:0.7rem;">UNAUTHORIZED</div>
 </div>
 
 <div class="tracker">
-    <div class="step active" id="s1">Identity</div>
-    <div class="step" id="s2">Sync</div>
-    <div class="step" id="s3">Analysis</div>
-    <div class="step" id="s4">Financials</div>
-    <div class="step" id="s5">Attest</div>
-    <div class="step" id="s6">Done</div>
+    <div class="step active" id="s1">IDENTITY</div>
+    <div class="step" id="s2">SYNC</div>
+    <div class="step" id="s4">FINANCIALS</div>
+    <div class="step" id="s5">ATTEST</div>
 </div>
 
 <div class="container">
     <div class="card">
         <div id="step1">
-            <h2>Station Login</h2>
-            <input type="text" id="userName" placeholder="Your Full Name"><br>
+            <h2 style="margin-top:0;">Station Login</h2>
+            <input type="text" id="userName" placeholder="Full Name">
             <select id="clinic">
-                <option value="">Select Clinic Location</option>
+                <option value="">Select Clinic</option>
                 <option value="addison">Addison Clinic</option>
                 <option value="abrams">Abrams Clinic</option>
-            </select><br>
-            <input type="password" id="pass" placeholder="Access Code"><br><br>
+            </select>
+            <input type="password" id="pass" placeholder="Access Code">
             <button class="primary" onclick="checkAuth()">Unlock Station</button>
+            <div class="footer-legal">Property of Kokoro Health & Wellness, Inc. PHI Warning: Strictly Confidential.</div>
         </div>
 
         <div id="step2" style="display:none;">
-            <button class="nav-back" onclick="goStep(1)">← Logout</button>
-            <h2>Data Synchronization</h2>
-            <div id="syncStatus" style="max-width: 400px; margin: 20px auto; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px;"></div>
-            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Audit Analysis →</button>
+            <button class="nav-back" onclick="goStep(1)">BACK</button>
+            <h2>Data Sync</h2>
+            <div id="syncStatus" style="text-align:left; font-size:0.8rem; background:#f9f9f9; padding:10px; border-radius:4px;"></div>
+            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Pre-Visit Analysis</button>
         </div>
 
         <div id="step4" style="display:none;">
-            <button class="nav-back" onclick="goStep(2)">← Back to Sync</button>
-            <div class="tabs">
-                <button class="tab-btn active" id="t1" onclick="switchTab('active')">ACTIVE</button>
-                <button class="tab-btn" id="t2" onclick="switchTab('warning')">RENEWALS/QUARTERLY</button>
-                <button class="tab-btn" id="t3" onclick="switchTab('error')">INACTIVE/ADD-ONS</button>
-            </div>
-            <div id="tabContent"></div><br>
-            <button class="primary" onclick="goStep(5)">Proceed to Attestation →</button>
+            <button class="nav-back" onclick="goStep(2)">BACK</button>
+            <h3>Audit Results</h3>
+            <div id="tabContent"></div>
+            <button class="primary" onclick="goStep(5)">Proceed to Sign-off</button>
         </div>
 
         <div id="step5" style="display:none;">
-            <button class="nav-back" onclick="goStep(4)">← Back to Financials</button>
-            <h2>Audit Attestation</h2>
-            <p>I, <strong id="attestName"></strong>, attest to the following:</p>
-            <div style="text-align:left; background:#fffbf0; padding:20px; border-radius:8px; margin:20px auto; max-width:500px;">
-                <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="check1"> Verified "No-Match" in eCW.</label>
-                <label style="display:block;"><input type="checkbox" id="check3"> Sent report to FO Manager.</label>
-            </div>
-            <button class="primary" onclick="signOff()">Digital Signature</button>
+            <button class="nav-back" onclick="goStep(4)">BACK</button>
+            <h2>Attestation</h2>
+            <p style="font-size:0.8rem;">I, <span id="attestName" style="font-weight:bold;"></span>, certify this audit.</p>
+            <label style="font-size:0.8rem;"><input type="checkbox" id="check1"> Verified eCW vs Ledger</label>
+            <button class="primary" onclick="goStep(6)">Sign & Complete</button>
         </div>
 
         <div id="step6" style="display:none;">
-            <h1 style="color:var(--success)">✔ RECORDED</h1>
-            <p id="finalMsg"></p>
+            <h2 style="color:var(--success)">DONE</h2>
+            <p style="font-size:0.8rem;">Audit recorded for clinic Space.</p>
             <button class="primary" onclick="location.reload()">New Session</button>
         </div>
     </div>
 </div>
-
-<footer>&copy; 2026 Kokoro Health & Wellness, Inc. | Property of KHW | HIPAA SECURE</footer>
 
 <script>
     const SECRET = "Trinity@50Panda";
@@ -125,70 +99,50 @@
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    let session = { user: '', clinic: '', data: {active:[], warning:[], error:[]} };
-    let raw = { master:[], addison:[], abrams:[] };
+    let raw = { master: [], current: [] };
+
+    function goStep(n) {
+        [1, 2, 4, 5, 6].forEach(i => {
+            const el = document.getElementById('step' + i);
+            if (el) el.style.display = (i === n) ? 'block' : 'none';
+            const s = document.getElementById('s' + i);
+            if (s) s.className = (i === n) ? 'step active' : 'step';
+        });
+    }
 
     function checkAuth() {
         const u = document.getElementById('userName').value;
         const c = document.getElementById('clinic').value;
-        if(!u || !c || document.getElementById('pass').value !== SECRET) { alert("Missing credentials"); return; }
-        session.user = u; session.clinic = c;
-        document.getElementById('sessionUser').innerText = `STATION: ${u.toUpperCase()} @ ${c.toUpperCase()}`;
+        const p = document.getElementById('pass').value;
+        if (!u || !c || p !== SECRET) return alert("Required: Name, Clinic, and Correct Code.");
+        document.getElementById('sessionUser').innerText = u.toUpperCase() + " @ " + c.toUpperCase();
         document.getElementById('attestName').innerText = u;
-        goStep(2); syncData();
+        goStep(2); syncData(c);
     }
 
-    async function syncData() {
-        const statusDiv = document.getElementById('syncStatus');
-        statusDiv.innerHTML = "";
-        for(let k of ['master', session.clinic]) {
-            try {
-                const r = await fetch(URLS[k]);
-                raw[k] = Papa.parse(await r.text(), {header:true, skipEmptyLines:true}).data;
-                statusDiv.innerHTML += `<div style="color:var(--success)">✔ ${k.toUpperCase()} Synced</div>`;
-            } catch(e) { statusDiv.innerHTML += `<div style="color:var(--error)">✘ ${k.toUpperCase()} Failed</div>`; }
-        }
-        document.getElementById('btnProcess').style.display = 'block';
+    async function syncData(clinic) {
+        const status = document.getElementById('syncStatus');
+        status.innerHTML = "Fetching data...";
+        try {
+            const r1 = await fetch(URLS.master);
+            raw.master = Papa.parse(await r1.text(), {header:true}).data;
+            const r2 = await fetch(URLS[clinic]);
+            raw.current = Papa.parse(await r2.text(), {header:true}).data;
+            status.innerHTML = "✅ Ledger Synced<br>✅ Schedule Synced";
+            document.getElementById('btnProcess').style.display = 'block';
+        } catch(e) { status.innerHTML = "❌ Sync Error. Check connection."; }
     }
 
     function processData() {
-        session.data = {active:[], warning:[], error:[]};
-        const today = new Date();
-        raw[session.clinic].forEach(p => {
-            const match = raw.master.find(m => m['MRN']?.trim() === p['Pat #']?.trim());
-            if(!match) session.data.error.push(p);
-            else {
-                const days = (new Date(match['Next_Payment_Date']) - today) / 86400000;
-                if(days <= 7) session.data.warning.push({...p, ...match});
-                else session.data.active.push({...p, ...match});
-            }
+        let html = "<table><tr><th>Patient</th><th>Fee</th></tr>";
+        raw.current.forEach(p => {
+            if(!p['Pat #']) return;
+            const match = raw.master.find(m => m['MRN'] === p['Pat #']);
+            const fee = match ? "$0" : "$129";
+            html += `<tr><td>${p['Pat F Name']} ${p['Pat L Name']}</td><td>${fee}</td></tr>`;
         });
-        switchTab('active'); goStep(4);
-    }
-
-    function switchTab(t) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(t === 'active' ? 't1' : (t === 'warning' ? 't2' : 't3')).classList.add('active');
-        let h = `<table><tr><th>Patient</th><th>MRN</th><th>Status</th></tr>`;
-        session.data[t].forEach(r => {
-            const b = t === 'active' ? 'bg-active' : (t === 'warning' ? 'bg-warning' : 'bg-error');
-            h += `<tr><td>${r['Pat F Name']} ${r['Pat L Name']}</td><td>${r['Pat #']}</td><td><span class="badge ${b}">${t.toUpperCase()}</span></td></tr>`;
-        });
-        document.getElementById('tabContent').innerHTML = h + `</table>`;
-    }
-
-    function goStep(n) {
-        for(let i=1; i<=6; i++) {
-            if(document.getElementById('step'+i)) document.getElementById('step'+i).style.display = (i===n)?'block':'none';
-            const s = document.getElementById('s'+i);
-            if(s) { s.classList.remove('active','done'); if(i<n) s.classList.add('done'); if(i===n) s.classList.add('active'); }
-        }
-    }
-
-    function signOff() {
-        if(!document.getElementById('check1').checked || !document.getElementById('check3').checked) { alert("Checkboxes required"); return; }
-        document.getElementById('finalMsg').innerText = `Finalized by ${session.user} at ${new Date().toLocaleTimeString()}.`;
-        goStep(6);
+        document.getElementById('tabContent').innerHTML = html + "</table>";
+        goStep(4);
     }
 </script>
 </body>
