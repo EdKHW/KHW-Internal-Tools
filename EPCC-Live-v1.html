@@ -1,149 +1,223 @@
-<!DOCTYPE html>
+html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <title>EPCC — Clinic Decision Engine</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
     <style>
-        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; --success: #10b981; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
-        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        
-        /* Progress Tracker */
-        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .step { text-align: center; flex: 1; }
-        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
-        .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
-        .step.completed .step-circle { background: var(--success); color: white; }
 
-        /* Dashboard Metrics */
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
-        .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
+        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; }
 
-        /* Tabs */
-        .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
-        .tab { padding: 12px 20px; cursor: pointer; background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0; font-weight: bold; }
-        .tab.active { background: white; border-top: 4px solid var(--teal); color: var(--teal); }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; color: var(--navy); }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        
-        .no-print { display: block; }
-        @media print { .no-print { display: none; } }
+        .card { background: white; max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+        h2 { border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
+
+        .ledger-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+
+        .ledger-table th, .ledger-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+
+        .ledger-table th { background: #f8f9fa; font-size: 0.8rem; }
+
+        .attest-box { background: #fffde7; border: 1px solid #ffe082; padding: 20px; margin-top: 20px; border-radius: 8px; }
+
+        button { background: var(--teal); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        @media print { .no-print { display: none; } .card { box-shadow: none; border: none; width: 100%; } }
+
     </style>
+
 </head>
+
 <body>
 
-<div class="container">
-    <div class="tracker no-print">
-        <div class="step completed"><div class="step-circle">✓</div><small>SIGN IN</small></div>
-        <div class="step completed"><div class="step-circle">✓</div><small>LEDGER</small></div>
-        <div class="step active"><div class="step-circle">4</div><small>RESULTS</small></div>
-        <div class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
-    </div>
 
-    <div id="setupView" class="no-print" style="text-align: center;">
-        <h2>Clinic Decision Engine</h2>
-        <select id="clinic" style="padding: 10px; width: 200px;">
+
+<div class="card" id="mainContainer">
+
+    <div id="step1" class="no-print">
+
+        <h2>EPCC Command Center</h2>
+
+        <select id="clinic">
+
             <option value="addison">Addison Clinic</option>
+
             <option value="abrams">Abrams Clinic</option>
+
         </select>
-        <button onclick="startSession()" style="background: var(--teal); color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer;">START AUDIT</button>
+
+        <button onclick="startSession()">START SESSION</button>
+
     </div>
 
-    <div id="resultsView" style="display:none;">
-        <h2 id="clinicHeader">RESULTS</h2>
+
+
+    <div id="step2" style="display:none;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+
+            <h1 id="pdfHeader">Clinic Check-In Ledger</h1>
+
+            <div id="pdfDate">DOS: 03/25/2026</div>
+
+        </div>
+
         
-        <div class="metrics-grid">
-            <div class="metric-card"><h1 id="count-addison">0</h1>SUPERBILLS</div>
-            <div class="metric-card"><h1 id="count-ecw">0</h1>ECW ACTIONS</div>
-            <div class="metric-card"><h1 id="count-exp">0</h1>EXPIRING</div>
-            <div class="metric-card"><h1>03/25</h1>DOS</div>
+
+        <table class="ledger-table" id="ledgerTable">
+
+            <thead>
+
+                <tr>
+
+                    <th>MRN</th>
+
+                    <th>DOB</th>
+
+                    <th>DOS</th>
+
+                    <th>Amount Due</th>
+
+                    <th>Reason</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="ledgerBody"></tbody>
+
+        </table>
+
+
+
+        <div class="attest-box no-print">
+
+            <h3>Final Attestation & Hand-off</h3>
+
+            <label><input type="checkbox" id="check1"> eCW Schedule Verified against Master Ledger</label><br><br>
+
+            <label><input type="checkbox" id="check2"> 7-Day Expiration Report sent to FO Manager</label><br><br>
+
+            <label><input type="checkbox" id="check3"> Clinic Ledger PDF generated for FO Desk</label><br><br>
+
+            <button onclick="finalize()">SIGN & PRINT LEDGER</button>
+
         </div>
 
-        <div class="tabs no-print">
-            <div class="tab active" onclick="showTab('audit')">🏥 CLINIC AUDIT</div>
-            <div class="tab" onclick="showTab('attest')">✍️ ATTESTATION</div>
-        </div>
-
-        <div id="tab-audit">
-            <table>
-                <thead>
-                    <tr><th>MRN</th><th>DOB</th><th>PLAN</th><th>DUE</th><th>REASON</th></tr>
-                </thead>
-                <tbody id="ledgerBody"></tbody>
-            </table>
-        </div>
-
-        <div id="tab-attest" style="display:none;" class="no-print">
-            <div style="background: #fffde7; padding: 20px; border-radius: 8px; border: 1px solid #ffe082;">
-                <h3>Final Hand-off Checklist</h3>
-                <p><input type="checkbox" id="check1"> Schedule verified against Master Ledger</p>
-                <p><input type="checkbox" id="check2"> Expiration report sent to FO Manager</p>
-                <button onclick="finalize()" style="background: var(--navy); color: white; padding: 12px 24px; border: none; border-radius: 6px;">PRINT CLINIC LEDGER</button>
-            </div>
-        </div>
     </div>
+
 </div>
 
+
+
 <script>
+
     const URLS = {
+
         master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
+
         addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
+
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
+
     };
 
+
+
     async function startSession() {
+
         const clinic = document.getElementById('clinic').value;
+
         const res1 = await fetch(URLS.master);
+
         const masterData = Papa.parse(await res1.text(), {header:true}).data;
+
         const res2 = await fetch(URLS[clinic]);
+
         const scheduleData = Papa.parse(await res2.text(), {header:true}).data;
 
+
+
         let html = "";
-        let bills = 0;
-        let expiring = 0;
 
         scheduleData.forEach(p => {
+
             const member = masterData.find(m => m['MRN'] === p['Pat #']);
-            if(!member) return;
+
+            if(!member) return; // Hide non-members per instruction
+
+
+
+            const effDate = new Date(member['EffectiveDate']);
+
+            const today = new Date();
+
+            const diffDays = Math.floor((today - effDate) / (1000 * 60 * 60 * 24));
+
+            
+
+            // Logic for Add-on vs Plan Visit
 
             let amount = "$0.00";
+
             let reason = "Plan Visit";
-            bills++;
+
+
+
+            // If Q-Installment AND visit used (placeholder logic for visit count)
 
             if(member['Plan'].includes('Quarterly') && p['Appt Type'].includes('EST')) {
-                amount = "$329.00"; // Updated per pricing logic
-                reason = "Quarterly Renewal Due";
-                expiring++;
+
+                // In future: add actual count check. For now, flag 7-day warning
+
+                const daysToMilestone = 90 - (diffDays % 90);
+
+                if(daysToMilestone <= 7) { amount = "$129.00"; reason = "Add-on (Renewal Due)"; }
+
             }
 
-            html += `<tr><td>${p['Pat #']}</td><td>${p['Pat Birthdate']}</td><td>${member['Plan']}</td><td>${amount}</td><td>${reason}</td></tr>`;
+
+
+            html += `<tr><td>${p['Pat #']}</td><td>${p['Pat Birthdate']}</td><td>03/25/2026</td><td>${amount}</td><td>${reason}</td></tr>`;
+
         });
 
+
+
         document.getElementById('ledgerBody').innerHTML = html;
-        document.getElementById('count-addison').innerText = bills;
-        document.getElementById('count-exp').innerText = expiring;
-        document.getElementById('setupView').style.display = 'none';
-        document.getElementById('resultsView').style.display = 'block';
-        document.getElementById('clinicHeader').innerText = clinic.toUpperCase() + " AUDIT RESULTS";
+
+        document.getElementById('pdfHeader').innerText = clinic.toUpperCase() + " CLINIC";
+
+        document.getElementById('step1').style.display = 'none';
+
+        document.getElementById('step2').style.display = 'block';
+
     }
 
-    function showTab(name) {
-        document.getElementById('tab-audit').style.display = (name === 'audit') ? 'block' : 'none';
-        document.getElementById('tab-attest').style.display = (name === 'attest') ? 'block' : 'none';
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
+
 
     function finalize() {
-        if(!document.getElementById('check1').checked || !document.getElementById('check2').checked) {
-            return alert("Complete the checklist first.");
+
+        if(!document.getElementById('check1').checked || !document.getElementById('check2').checked || !document.getElementById('check3').checked) {
+
+            return alert("Complete all 3 attestation steps first.");
+
         }
+
         window.print();
+
     }
+
 </script>
+
 </body>
+
 </html>
