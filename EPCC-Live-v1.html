@@ -23,7 +23,8 @@
         .container { flex: 1; max-width: 1000px; margin: 30px auto; width: 95%; }
         .card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 40px; text-align: center; position: relative; min-height: 450px; }
         
-        .nav-back { position: absolute; top: 20px; left: 20px; background: #f0f4f8; border: none; color: #5a7184; padding: 8px 15px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        /* THE BACK BUTTON */
+        .nav-back { position: absolute; top: 20px; left: 20px; background: #f0f4f8; border: none; color: #5a7184; padding: 8px 15px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .nav-back:hover { background: #dbe5ee; color: var(--navy); }
 
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; width: 280px; }
@@ -41,7 +42,6 @@
         .bg-warning { background: #fffaf0; color: #744210; }
         .bg-error { background: #fff5f5; color: #822727; }
 
-        .legal-notice { font-size: 0.65rem; color: #999; margin-top: 30px; line-height: 1.4; border-top: 1px solid #eee; padding-top: 15px; }
         footer { background: #f8f9fa; text-align: center; padding: 20px; font-size: 0.75rem; color: #666; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
@@ -68,7 +68,6 @@
     <div class="card">
         <div id="step1">
             <h2>Station Login</h2>
-            <p style="font-size: 0.85rem; color: #666;">Team Lead credentials required for Pre-Visit Workflow.</p>
             <input type="text" id="userName" placeholder="Your Full Name"><br>
             <select id="clinic">
                 <option value="">Select Clinic Location</option>
@@ -77,51 +76,46 @@
             </select><br>
             <input type="password" id="pass" placeholder="Access Code"><br><br>
             <button class="primary" onclick="checkAuth()">Unlock Station</button>
-            <div class="legal-notice">
-                Property of Kokoro Health & Wellness, Inc. Strictly Confidential. HIPAA/PHI Warning: Unauthorized disclosure of patient data is a federal offense.
-            </div>
         </div>
 
         <div id="step2" style="display:none;">
             <button class="nav-back" onclick="goStep(1)">← Logout</button>
             <h2>Data Synchronization</h2>
-            <p>Pulling latest Ledger from FO Manager Gatekeeper...</p>
             <div id="syncStatus" style="max-width: 400px; margin: 20px auto; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px;"></div>
-            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Pre-Visit Analysis →</button>
+            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Audit Analysis →</button>
         </div>
 
         <div id="step4" style="display:none;">
             <button class="nav-back" onclick="goStep(2)">← Back to Sync</button>
             <div class="tabs">
-                <button class="tab-btn active" id="t1" onclick="switchTab('active')">ACTIVE ($0)</button>
-                <button class="tab-btn" id="t2" onclick="switchTab('warning')">BILLABLE ($129)</button>
-                <button class="tab-btn" id="t3" onclick="switchTab('error')">NO MATCH / INACTIVE</button>
+                <button class="tab-btn active" id="t1" onclick="switchTab('active')">ACTIVE</button>
+                <button class="tab-btn" id="t2" onclick="switchTab('warning')">RENEWALS/QUARTERLY</button>
+                <button class="tab-btn" id="t3" onclick="switchTab('error')">INACTIVE/ADD-ONS</button>
             </div>
             <div id="tabContent"></div><br>
-            <button class="primary" onclick="goStep(5)">Proceed to Digital Sign-off →</button>
+            <button class="primary" onclick="goStep(5)">Proceed to Attestation →</button>
         </div>
 
         <div id="step5" style="display:none;">
-            <button class="nav-back" onclick="goStep(4)">← Back to Analysis</button>
+            <button class="nav-back" onclick="goStep(4)">← Back to Financials</button>
             <h2>Audit Attestation</h2>
-            <p>I, <strong id="attestName"></strong>, certify this audit is complete:</p>
-            <div style="text-align:left; background:#fffbf0; padding:20px; border-radius:8px; margin:20px auto; max-width:500px; border: 1px solid var(--gold);">
-                <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="check1"> Cross-referenced eCW Export vs Ledger.</label>
-                <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="check2"> Verified Billing Code ($0/$129) per Quarter.</label>
-                <label style="display:block;"><input type="checkbox" id="check3"> Syncing PDF Superbills to Clinic Space.</label>
+            <p>I, <strong id="attestName"></strong>, attest to the following:</p>
+            <div style="text-align:left; background:#fffbf0; padding:20px; border-radius:8px; margin:20px auto; max-width:500px;">
+                <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="check1"> Verified "No-Match" in eCW.</label>
+                <label style="display:block;"><input type="checkbox" id="check3"> Sent report to FO Manager.</label>
             </div>
             <button class="primary" onclick="signOff()">Digital Signature</button>
         </div>
 
         <div id="step6" style="display:none;">
-            <h1 style="color:var(--success)">✔ WORKFLOW RECORDED</h1>
+            <h1 style="color:var(--success)">✔ RECORDED</h1>
             <p id="finalMsg"></p>
-            <button class="primary" onclick="location.reload()">Start New Session</button>
+            <button class="primary" onclick="location.reload()">New Session</button>
         </div>
     </div>
 </div>
 
-<footer>&copy; 2026 Kokoro Health & Wellness, Inc. | Private Terminal</footer>
+<footer>&copy; 2026 Kokoro Health & Wellness, Inc. | Property of KHW | HIPAA SECURE</footer>
 
 <script>
     const SECRET = "Trinity@50Panda";
@@ -132,14 +126,14 @@
     };
 
     let session = { user: '', clinic: '', data: {active:[], warning:[], error:[]} };
-    let raw = { master:[], current:[] };
+    let raw = { master:[], addison:[], abrams:[] };
 
     function checkAuth() {
         const u = document.getElementById('userName').value;
         const c = document.getElementById('clinic').value;
-        if(!u || !c || document.getElementById('pass').value !== SECRET) { alert("Credentials required"); return; }
+        if(!u || !c || document.getElementById('pass').value !== SECRET) { alert("Missing credentials"); return; }
         session.user = u; session.clinic = c;
-        document.getElementById('sessionUser').innerText = `TEAM LEAD: ${u.toUpperCase()} | ${c.toUpperCase()}`;
+        document.getElementById('sessionUser').innerText = `STATION: ${u.toUpperCase()} @ ${c.toUpperCase()}`;
         document.getElementById('attestName').innerText = u;
         goStep(2); syncData();
     }
@@ -147,40 +141,26 @@
     async function syncData() {
         const statusDiv = document.getElementById('syncStatus');
         statusDiv.innerHTML = "";
-        const targets = ['master', session.clinic];
-        for(let k of targets) {
+        for(let k of ['master', session.clinic]) {
             try {
                 const r = await fetch(URLS[k]);
-                const csv = await r.text();
-                const d = Papa.parse(csv, {header:true, skipEmptyLines:true}).data;
-                if(k === 'master') raw.master = d; else raw.current = d;
-                statusDiv.innerHTML += `<div style="color:var(--success)">✅ ${k.toUpperCase()} Synced</div>`;
-            } catch(e) { statusDiv.innerHTML += `<div style="color:var(--error)">❌ ${k.toUpperCase()} Connection Error</div>`; }
+                raw[k] = Papa.parse(await r.text(), {header:true, skipEmptyLines:true}).data;
+                statusDiv.innerHTML += `<div style="color:var(--success)">✔ ${k.toUpperCase()} Synced</div>`;
+            } catch(e) { statusDiv.innerHTML += `<div style="color:var(--error)">✘ ${k.toUpperCase()} Failed</div>`; }
         }
-        document.getElementById('btnProcess').style.display = 'inline-block';
+        document.getElementById('btnProcess').style.display = 'block';
     }
 
     function processData() {
         session.data = {active:[], warning:[], error:[]};
         const today = new Date();
-        
-        raw.current.forEach(p => {
-            const mrn = p['Pat #']?.trim();
-            if(!mrn) return;
-            const match = raw.master.find(m => m['MRN']?.trim() === mrn);
-            
-            if(!match) {
-                session.data.error.push({...p, reason: "NOT ENROLLED"});
-            } else {
-                // Binary Logic: Check Next_Payment_Date as a proxy for Quarter/Due
-                const nextPay = new Date(match['Next_Payment_Date']);
-                const daysUntil = (nextPay - today) / 86400000;
-                
-                if(daysUntil <= 7) {
-                    session.data.warning.push({...p, ...match, fee: "$129"});
-                } else {
-                    session.data.active.push({...p, ...match, fee: "$0"});
-                }
+        raw[session.clinic].forEach(p => {
+            const match = raw.master.find(m => m['MRN']?.trim() === p['Pat #']?.trim());
+            if(!match) session.data.error.push(p);
+            else {
+                const days = (new Date(match['Next_Payment_Date']) - today) / 86400000;
+                if(days <= 7) session.data.warning.push({...p, ...match});
+                else session.data.active.push({...p, ...match});
             }
         });
         switchTab('active'); goStep(4);
@@ -188,33 +168,26 @@
 
     function switchTab(t) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(t === 'active') document.getElementById('t1').classList.add('active');
-        if(t === 'warning') document.getElementById('t2').classList.add('active');
-        if(t === 'error') document.getElementById('t3').classList.add('active');
-        
-        let h = `<table><tr><th>Patient</th><th>MRN</th><th>Fee Status</th></tr>`;
+        document.getElementById(t === 'active' ? 't1' : (t === 'warning' ? 't2' : 't3')).classList.add('active');
+        let h = `<table><tr><th>Patient</th><th>MRN</th><th>Status</th></tr>`;
         session.data[t].forEach(r => {
             const b = t === 'active' ? 'bg-active' : (t === 'warning' ? 'bg-warning' : 'bg-error');
-            const feeTxt = t === 'active' ? '$0 (EP Pd)' : (t === 'warning' ? '$129 (Billable)' : 'Ineligible');
-            h += `<tr><td>${r['Pat F Name']} ${r['Pat L Name']}</td><td>${r['Pat #']}</td><td><span class="badge ${b}">${feeTxt}</span></td></tr>`;
+            h += `<tr><td>${r['Pat F Name']} ${r['Pat L Name']}</td><td>${r['Pat #']}</td><td><span class="badge ${b}">${t.toUpperCase()}</span></td></tr>`;
         });
         document.getElementById('tabContent').innerHTML = h + `</table>`;
     }
 
     function goStep(n) {
         for(let i=1; i<=6; i++) {
-            const el = document.getElementById('step'+i);
-            if(el) el.style.display = (i === n) ? 'block' : 'none';
+            if(document.getElementById('step'+i)) document.getElementById('step'+i).style.display = (i===n)?'block':'none';
             const s = document.getElementById('s'+i);
             if(s) { s.classList.remove('active','done'); if(i<n) s.classList.add('done'); if(i===n) s.classList.add('active'); }
         }
     }
 
     function signOff() {
-        if(!document.getElementById('check1').checked || !document.getElementById('check3').checked) {
-            alert("Attestation checkboxes required."); return;
-        }
-        document.getElementById('finalMsg').innerText = `Session finalized by Team Lead ${session.user} at ${new Date().toLocaleTimeString()}. Data pushed to eCW Folder.`;
+        if(!document.getElementById('check1').checked || !document.getElementById('check3').checked) { alert("Checkboxes required"); return; }
+        document.getElementById('finalMsg').innerText = `Finalized by ${session.user} at ${new Date().toLocaleTimeString()}.`;
         goStep(6);
     }
 </script>
