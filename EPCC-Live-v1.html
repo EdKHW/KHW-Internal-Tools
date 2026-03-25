@@ -7,32 +7,28 @@
     <style>
         :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; --success: #10b981; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
-        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-height: 600px; position: relative; }
+        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-height: 600px; }
         
-        /* Fixed Horizontal Tracker */
+        /* Progress Tracker */
         .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 40px; width: 100%; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
         .step { text-align: center; flex: 1; }
         .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
         .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
 
-        /* Navigation Buttons */
-        .nav-row { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; }
-        .btn { padding: 12px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        .btn-back { background: #6b7280; color: white; }
-        .btn-next { background: var(--teal); color: white; }
-        
-        /* Content Views */
-        .view { display: none; padding: 20px 0; }
+        /* Navigation & Views */
+        .view { display: none; padding: 40px 0; text-align: center; }
         .view.active { display: block; }
-        .hidden { display: none !important; }
+        .btn { padding: 12px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; margin: 10px; }
+        .btn-next { background: var(--teal); color: white; }
+        .btn-back { background: #6b7280; color: white; }
 
-        /* Dashboard & Table */
+        /* Dashboard */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
         .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
         .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -47,26 +43,34 @@
         <div id="prog-6" class="step"><div class="step-circle">6</div><small>DONE</small></div>
     </div>
 
-    <div id="view-1" class="view active" style="text-align: center;">
-        <h2>Staff Authentication</h2>
-        <input type="password" id="pass" placeholder="Enter Access Code" style="padding:12px; width:250px; border-radius:6px; border:1px solid #ccc;">
+    <div id="view-1" class="view active">
+        <h1>Staff Sign-In</h1>
+        <p>Enter your clinic access code to begin.</p>
+        <input type="password" id="pass" placeholder="Access Code" style="padding:12px; width:250px; border-radius:6px; border:1px solid #ccc; font-size: 16px;">
+        <br><br>
+        <button class="btn btn-next" onclick="validatePass()">CONTINUE →</button>
     </div>
 
-    <div id="view-2" class="view" style="text-align: center;">
-        <h2>Select Clinic Location</h2>
-        <select id="clinic" style="padding:12px; width:250px; border-radius:6px;">
+    <div id="view-2" class="view">
+        <h1>EPCC Command Center</h1>
+        <p>Select clinic location to sync live data.</p>
+        <select id="clinic" style="padding:12px; width:300px; border-radius:6px; font-size: 16px; margin-bottom: 20px;">
             <option value="addison">Addison Clinic</option>
             <option value="abrams">Abrams Clinic</option>
         </select>
+        <br>
+        <button class="btn btn-back" onclick="goToStep(1)">← BACK</button>
+        <button class="btn btn-next" onclick="goToStep(3)">NEXT: SYNC SCHEDULES →</button>
     </div>
 
-    <div id="view-3" class="view" style="text-align: center;">
-        <h2>Syncing Clinic Schedules</h2>
-        <p>Press "Process" to pull the latest eCW data and cross-reference with Ledger.</p>
-        <button class="btn btn-next" onclick="runAutomation()">PROCESS SCHEDULE →</button>
+    <div id="view-3" class="view">
+        <h1>Verify Schedule Audit</h1>
+        <p>Ready to pull the latest eCW data and cross-reference with the Master Ledger.</p>
+        <button class="btn btn-back" onclick="goToStep(2)">← BACK</button>
+        <button class="btn btn-next" onclick="runAutomation()" style="background:var(--success)">PROCESS SCHEDULE →</button>
     </div>
 
-    <div id="view-4" class="view">
+    <div id="view-4" class="view" style="text-align: left;">
         <div class="metrics-grid">
             <div class="metric-card"><h1 id="count-bills">0</h1>SUPERBILLS</div>
             <div class="metric-card"><h1>0</h1>ACTIONS</div>
@@ -77,22 +81,26 @@
             <thead><tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr></thead>
             <tbody id="ledgerBody"></tbody>
         </table>
+        <div style="text-align:right; margin-top:20px;">
+            <button class="btn btn-next" onclick="goToStep(5)">NEXT: ATTESTATION →</button>
+        </div>
     </div>
 
     <div id="view-5" class="view">
-        <h2>Final Attestation</h2>
-        <p><input type="checkbox"> Verified schedule against Master Ledger</p>
-        <p><input type="checkbox"> Reported expirations to FO Manager</p>
+        <h1>Final Attestation</h1>
+        <div style="max-width:400px; margin:auto; text-align:left; background:#fffde7; padding:20px; border-radius:8px; border:1px solid #ffe082;">
+            <p><input type="checkbox"> Verified schedule against Master Ledger</p>
+            <p><input type="checkbox"> Reported expirations to FO Manager</p>
+            <p><input type="checkbox"> Confirmed correct Plan status in eCW</p>
+        </div>
+        <br>
+        <button class="btn btn-next" onclick="goToStep(6)">SIGN & COMPLETE</button>
     </div>
 
-    <div id="view-6" class="view" style="text-align: center;">
+    <div id="view-6" class="view">
         <h1 style="color:var(--success)">✓ Audit Complete</h1>
+        <p>Today's audit for the selected clinic has been logged.</p>
         <button class="btn btn-back" onclick="location.reload()">START NEW SESSION</button>
-    </div>
-
-    <div class="nav-row" id="nav-container">
-        <button id="btn-back" class="btn btn-back hidden" onclick="changeStep(-1)">← BACK</button>
-        <button id="btn-next" class="btn btn-next" onclick="changeStep(1)">NEXT →</button>
     </div>
 </div>
 
@@ -104,25 +112,28 @@
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    function changeStep(delta) {
-        if (currentStep === 1 && delta === 1 && document.getElementById('pass').value !== 'EP2026') {
-            return alert("Invalid Access Code");
+    function validatePass() {
+        if(document.getElementById('pass').value === 'EP2026') {
+            goToStep(2);
+        } else {
+            alert("Incorrect code. Please try again.");
         }
+    }
+
+    function goToStep(stepNumber) {
+        // Hide all views
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        // Show target view
+        document.getElementById(`view-${stepNumber}`).classList.add('active');
         
-        // Hide current
-        document.getElementById(`view-${currentStep}`).classList.remove('active');
-        document.getElementById(`prog-${currentStep}`).classList.remove('active');
-        if (delta > 0) document.getElementById(`prog-${currentStep}`).classList.add('completed');
-
-        currentStep += delta;
-
-        // Show next
-        document.getElementById(`view-${currentStep}`).classList.add('active');
-        document.getElementById(`prog-${currentStep}`).classList.add('active');
-
-        // Toggle Nav Buttons
-        document.getElementById('btn-back').classList.toggle('hidden', currentStep === 1 || currentStep === 6);
-        document.getElementById('btn-next').classList.toggle('hidden', currentStep === 3 || currentStep === 6);
+        // Update Tracker UI
+        document.querySelectorAll('.step').forEach((s, idx) => {
+            s.classList.remove('active', 'completed');
+            if (idx + 1 < stepNumber) s.classList.add('completed');
+            if (idx + 1 === stepNumber) s.classList.add('active');
+        });
+        
+        currentStep = stepNumber;
     }
 
     async function runAutomation() {
@@ -144,7 +155,7 @@
 
         document.getElementById('ledgerBody').innerHTML = html;
         document.getElementById('count-bills').innerText = count;
-        changeStep(1); // Move to Results
+        goToStep(4); 
     }
 </script>
 </body>
