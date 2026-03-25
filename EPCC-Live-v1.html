@@ -2,110 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EPCC — Clinic Decision Engine</title>
+    <title>EPCC — Financial Decision Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; color: var(--navy); }
-        .card { background: white; max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        h2 { border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
-        .ledger-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .ledger-table th, .ledger-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        .ledger-table th { background: #f8f9fa; font-size: 0.8rem; }
-        .attest-box { background: #fffde7; border: 1px solid #ffe082; padding: 20px; margin-top: 20px; border-radius: 8px; }
-        button { background: var(--teal); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        @media print { .no-print { display: none; } .card { box-shadow: none; border: none; width: 100%; } }
+        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f9; }
+        body { font-family: 'Barlow', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
+        .card { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; }
+        .nav-back { position: absolute; top: 15px; left: 15px; cursor: pointer; border: 1px solid #ddd; background: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; font-size: 0.8rem; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        
+        .binary-zero { color: var(--success); font-weight: bold; background: #e6fffa; padding: 4px 8px; border-radius: 4px; }
+        .binary-bill { color: var(--error); font-weight: bold; background: #fff5f5; padding: 4px 8px; border-radius: 4px; }
+        .alert-fo { color: var(--gold); font-size: 0.7rem; display: block; margin-top: 4px; font-weight: bold; }
+        
+        input, select, button { padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ddd; }
+        .btn-main { background: var(--teal); color: white; border: none; font-weight: bold; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
 
-<div class="card" id="mainContainer">
-    <div id="step1" class="no-print">
-        <h2>EPCC Command Center</h2>
+<div class="card">
+    <div id="step1">
+        <h2>EPCC Login</h2>
+        <input type="text" id="userName" placeholder="Team Lead Name"><br>
         <select id="clinic">
-            <option value="addison">Addison Clinic</option>
-            <option value="abrams">Abrams Clinic</option>
-        </select>
-        <button onclick="startSession()">START SESSION</button>
+            <option value="">Select Clinic</option>
+            <option value="addison">Addison</option>
+            <option value="abrams">Abrams</option>
+        </select><br>
+        <input type="password" id="pass" placeholder="Access Code"><br>
+        <button class="btn-main" onclick="checkAuth()">UNLOCK ENGINE</button>
     </div>
 
     <div id="step2" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h1 id="pdfHeader">Clinic Check-In Ledger</h1>
-            <div id="pdfDate">DOS: 03/25/2026</div>
-        </div>
-        
-        <table class="ledger-table" id="ledgerTable">
-            <thead>
-                <tr>
-                    <th>MRN</th>
-                    <th>DOB</th>
-                    <th>DOS</th>
-                    <th>Amount Due</th>
-                    <th>Reason</th>
-                </tr>
-            </thead>
-            <tbody id="ledgerBody"></tbody>
-        </table>
+        <button class="nav-back" onclick="location.reload()">LOGOUT</button>
+        <h2>Syncing Source of Truth...</h2>
+        <div id="status"></div>
+        <button id="runBtn" class="btn-main" style="display:none;" onclick="processAnalysis()">GENERATE CHECK-IN REPORT</button>
+    </div>
 
-        <div class="attest-box no-print">
-            <h3>Final Attestation & Hand-off</h3>
-            <label><input type="checkbox" id="check1"> eCW Schedule Verified against Master Ledger</label><br><br>
-            <label><input type="checkbox" id="check2"> 7-Day Expiration Report sent to FO Manager</label><br><br>
-            <label><input type="checkbox" id="check3"> Clinic Ledger PDF generated for FO Desk</label><br><br>
-            <button onclick="finalize()">SIGN & PRINT LEDGER</button>
-        </div>
+    <div id="step3" style="display:none;">
+        <button class="nav-back" onclick="goStep(2)">BACK</button>
+        <h2>Check-In Ledger</h2>
+        <div id="results"></div>
+        <br>
+        <button class="btn-main" onclick="window.print()">GENERATE FO PDF REPORT</button>
     </div>
 </div>
 
 <script>
+    const SECRET = "Trinity@50Panda";
     const URLS = {
         master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
         addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    async function startSession() {
-        const clinic = document.getElementById('clinic').value;
-        const res1 = await fetch(URLS.master);
-        const masterData = Papa.parse(await res1.text(), {header:true}).data;
-        const res2 = await fetch(URLS[clinic]);
-        const scheduleData = Papa.parse(await res2.text(), {header:true}).data;
+    let raw = { master: [], current: [] };
 
-        let html = "";
-        scheduleData.forEach(p => {
-            const member = masterData.find(m => m['MRN'] === p['Pat #']);
-            if(!member) return; // Hide non-members per instruction
+    function goStep(n) { [1,2,3].forEach(i => document.getElementById('step'+i).style.display = (i===n ? 'block' : 'none')); }
 
-            const effDate = new Date(member['EffectiveDate']);
-            const today = new Date();
-            const diffDays = Math.floor((today - effDate) / (1000 * 60 * 60 * 24));
-            
-            // Logic for Add-on vs Plan Visit
-            let amount = "$0.00";
-            let reason = "Plan Visit";
-
-            // If Q-Installment AND visit used (placeholder logic for visit count)
-            if(member['Plan'].includes('Quarterly') && p['Appt Type'].includes('EST')) {
-                // In future: add actual count check. For now, flag 7-day warning
-                const daysToMilestone = 90 - (diffDays % 90);
-                if(daysToMilestone <= 7) { amount = "$129.00"; reason = "Add-on (Renewal Due)"; }
-            }
-
-            html += `<tr><td>${p['Pat #']}</td><td>${p['Pat Birthdate']}</td><td>03/25/2026</td><td>${amount}</td><td>${reason}</td></tr>`;
-        });
-
-        document.getElementById('ledgerBody').innerHTML = html;
-        document.getElementById('pdfHeader').innerText = clinic.toUpperCase() + " CLINIC";
-        document.getElementById('step1').style.display = 'none';
-        document.getElementById('step2').style.display = 'block';
+    function checkAuth() {
+        if(document.getElementById('pass').value === SECRET) { goStep(2); sync(); }
+        else alert("Unauthorized");
     }
 
-    function finalize() {
-        if(!document.getElementById('check1').checked || !document.getElementById('check2').checked || !document.getElementById('check3').checked) {
-            return alert("Complete all 3 attestation steps first.");
-        }
-        window.print();
+    async function sync() {
+        const c = document.getElementById('clinic').value;
+        const res1 = await fetch(URLS.master);
+        raw.master = Papa.parse(await res1.text(), {header:true}).data;
+        const res2 = await fetch(URLS[c]);
+        raw.current = Papa.parse(await res2.text(), {header:true}).data;
+        document.getElementById('status').innerText = "✅ Source of Truth Synced.";
+        document.getElementById('runBtn').style.display = 'block';
+    }
+
+    function processAnalysis() {
+        const today = new Date();
+        let html = "<table><tr><th>Patient</th><th>MRN</th><th>Instruction for FO</th></tr>";
+        
+        raw.current.forEach(p => {
+            const match = raw.master.find(m => m['MRN'] === p['Pat #']);
+            if(!match) return; // Hide non-members
+
+            const effDate = new Date(match['EffectiveDate']);
+            const diffDays = Math.floor((today - effDate) / (1000 * 60 * 60 * 24));
+            const yearDay = diffDays % 365;
+            const quarter = Math.floor(yearDay / 90) + 1;
+            
+            // 7-Day Warning Check
+            const daysToNextMilestone = 90 - (yearDay % 90);
+            const isWarning = (daysToNextMilestone <= 7);
+
+            let amount = "Amount Due: $0.00";
+            let css = "binary-zero";
+            let note = "(Within Membership Period)";
+
+            // Logic: If they are on a Quarterly plan and the installment is due (Warning)
+            if (match['Plan'].includes('Quarterly') && isWarning) {
+                amount = "Amount Due: $129.00";
+                css = "binary-bill";
+                note = `<span class="alert-fo">⚠️ FO ACTION: RENEW QUARTERLY CARD ON FILE</span>`;
+            } else if (diffDays >= 360 && isWarning) {
+                amount = "Amount Due: $129.00";
+                css = "binary-bill";
+                note = `<span class="alert-fo">⚠️ FO ACTION: ANNUAL EVERGREEN RENEWAL DUE</span>`;
+            }
+
+            html += `<tr>
+                <td>${p['Pat F Name']} ${p['Pat L Name']}</td>
+                <td>${p['Pat #']}</td>
+                <td><span class="${css}">${amount}</span><br>${note}</td>
+            </tr>`;
+        });
+
+        document.getElementById('results').innerHTML = html + "</table>";
+        goStep(3);
     }
 </script>
 </body>
