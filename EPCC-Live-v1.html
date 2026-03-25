@@ -1,149 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPCC — Kokoro Health & Wellness</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <style>
-        :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --success: #27ae60; --bg: #f4f6f9; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        .topbar { background: var(--navy); color: white; padding: 15px 30px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
-        .logo-area { display: flex; align-items: center; gap: 15px; }
-        .logo-circle { width: 40px; height: 40px; background: white; border-radius: 50%; overflow: hidden; border: 2px solid var(--gold); }
-        .logo-circle img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .tracker { display: flex; justify-content: center; background: white; padding: 10px; border-bottom: 1px solid #ddd; gap: 20px; font-size: 0.7rem; font-weight: bold; color: #ccc; }
-        .step.active { color: var(--teal); border-bottom: 2px solid var(--teal); }
+// 1. UPDATED PRICING CONSTANTS
+const PLAN_RATES = {
+    annual: 1116.00,
+    quarterly: 329.00, // Updated from original rate
+    family_add_on: 1000.00, // Paid in full, no installments
+    add_on_visit: 129.00,
+    add_on_massage: 50.00
+};
 
-        .container { flex: 1; padding: 40px 20px; }
-        .card { background: white; max-width: 500px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; position: relative; }
-        
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button.primary { width: 100%; background: var(--teal); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .nav-back { position: absolute; top: 10px; left: 10px; background: none; border: 1px solid #ddd; font-size: 0.6rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; font-size: 0.8rem; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; }
-        .footer-legal { font-size: 0.6rem; color: #999; margin-top: 20px; line-height: 1.4; }
-    </style>
-</head>
-<body>
+// 2. AUTOMATED STATUS LOGIC (For Addison & Abrams Tabs)
+function determinePatientStatus(patient, appointments) {
+    const hasMedicalVisitThisQuarter = checkUtilization(patient.mrn, 'medical');
+    const hasMassageThisQuarter = checkUtilization(patient.mrn, 'massage');
 
-<div class="topbar">
-    <div class="logo-area">
-        <div class="logo-circle"><img src="photo-01.jpg" alt="K" onerror="this.src='https://via.placeholder.com/40'"></div>
-        <div><strong>KOKORO HEALTH & WELLNESS</strong><br><small style="color:var(--gold)">EPCC COMMAND CENTER</small></div>
-    </div>
-    <div id="sessionUser" style="font-size:0.7rem;">UNAUTHORIZED</div>
-</div>
-
-<div class="tracker">
-    <div class="step active" id="s1">IDENTITY</div>
-    <div class="step" id="s2">SYNC</div>
-    <div class="step" id="s4">FINANCIALS</div>
-    <div class="step" id="s5">ATTEST</div>
-</div>
-
-<div class="container">
-    <div class="card">
-        <div id="step1">
-            <h2 style="margin-top:0;">Station Login</h2>
-            <input type="text" id="userName" placeholder="Full Name">
-            <select id="clinic">
-                <option value="">Select Clinic</option>
-                <option value="addison">Addison Clinic</option>
-                <option value="abrams">Abrams Clinic</option>
-            </select>
-            <input type="password" id="pass" placeholder="Access Code">
-            <button class="primary" onclick="checkAuth()">Unlock Station</button>
-            <div class="footer-legal">Property of Kokoro Health & Wellness, Inc. PHI Warning: Strictly Confidential.</div>
-        </div>
-
-        <div id="step2" style="display:none;">
-            <button class="nav-back" onclick="goStep(1)">BACK</button>
-            <h2>Data Sync</h2>
-            <div id="syncStatus" style="text-align:left; font-size:0.8rem; background:#f9f9f9; padding:10px; border-radius:4px;"></div>
-            <button id="btnProcess" class="primary" onclick="processData()" style="display:none;">Run Pre-Visit Analysis</button>
-        </div>
-
-        <div id="step4" style="display:none;">
-            <button class="nav-back" onclick="goStep(2)">BACK</button>
-            <h3>Audit Results</h3>
-            <div id="tabContent"></div>
-            <button class="primary" onclick="goStep(5)">Proceed to Sign-off</button>
-        </div>
-
-        <div id="step5" style="display:none;">
-            <button class="nav-back" onclick="goStep(4)">BACK</button>
-            <h2>Attestation</h2>
-            <p style="font-size:0.8rem;">I, <span id="attestName" style="font-weight:bold;"></span>, certify this audit.</p>
-            <label style="font-size:0.8rem;"><input type="checkbox" id="check1"> Verified eCW vs Ledger</label>
-            <button class="primary" onclick="goStep(6)">Sign & Complete</button>
-        </div>
-
-        <div id="step6" style="display:none;">
-            <h2 style="color:var(--success)">DONE</h2>
-            <p style="font-size:0.8rem;">Audit recorded for clinic Space.</p>
-            <button class="primary" onclick="location.reload()">New Session</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const SECRET = "Trinity@50Panda";
-    const URLS = {
-        master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
-        addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
-        abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
-    };
-
-    let raw = { master: [], current: [] };
-
-    function goStep(n) {
-        [1, 2, 4, 5, 6].forEach(i => {
-            const el = document.getElementById('step' + i);
-            if (el) el.style.display = (i === n) ? 'block' : 'none';
-            const s = document.getElementById('s' + i);
-            if (s) s.className = (i === n) ? 'step active' : 'step';
-        });
+    // If a visit already exists in the 90-day bucket, label as "Add-On"
+    if (appointments.type === 'KEP_EST' && hasMedicalVisitThisQuarter) {
+        return { label: 'Add-On', charge: PLAN_RATES.add_on_visit };
     }
-
-    function checkAuth() {
-        const u = document.getElementById('userName').value;
-        const c = document.getElementById('clinic').value;
-        const p = document.getElementById('pass').value;
-        if (!u || !c || p !== SECRET) return alert("Required: Name, Clinic, and Correct Code.");
-        document.getElementById('sessionUser').innerText = u.toUpperCase() + " @ " + c.toUpperCase();
-        document.getElementById('attestName').innerText = u;
-        goStep(2); syncData(c);
+    if (appointments.type === 'KEPmasg' && hasMassageThisQuarter) {
+        return { label: 'Add-On', charge: PLAN_RATES.add_on_massage };
     }
+    
+    // Otherwise, it remains a standard Plan Visit
+    return { label: 'Active', charge: 0.00 };
+}
 
-    async function syncData(clinic) {
-        const status = document.getElementById('syncStatus');
-        status.innerHTML = "Fetching data...";
-        try {
-            const r1 = await fetch(URLS.master);
-            raw.master = Papa.parse(await r1.text(), {header:true}).data;
-            const r2 = await fetch(URLS[clinic]);
-            raw.current = Papa.parse(await r2.text(), {header:true}).data;
-            status.innerHTML = "✅ Ledger Synced<br>✅ Schedule Synced";
-            document.getElementById('btnProcess').style.display = 'block';
-        } catch(e) { status.innerHTML = "❌ Sync Error. Check connection."; }
-    }
-
-    function processData() {
-        let html = "<table><tr><th>Patient</th><th>Fee</th></tr>";
-        raw.current.forEach(p => {
-            if(!p['Pat #']) return;
-            const match = raw.master.find(m => m['MRN'] === p['Pat #']);
-            const fee = match ? "$0" : "$129";
-            html += `<tr><td>${p['Pat F Name']} ${p['Pat L Name']}</td><td>${fee}</td></tr>`;
-        });
-        document.getElementById('tabContent').innerHTML = html + "</table>";
-        goStep(4);
-    }
-</script>
-</body>
-</html>
+// 3. EXPIRING TAB LOGIC (Assembly Line 7-Day Gate)
+function generateExpiringReport(members) {
+    return members.filter(m => isWithin7Days(m.nextChargeDate)).map(m => {
+        let amount = PLAN_RATES.annual;
+        if (m.plan === 'Quarterly') amount = PLAN_RATES.quarterly;
+        if (m.plan === 'Family') amount = PLAN_RATES.family_add_on;
+        
+        return { ...m, amountToCollect: amount };
+    });
+}
