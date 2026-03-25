@@ -9,26 +9,25 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
         .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-height: 600px; }
         
-        /* Progress Tracker */
-        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 40px; width: 100%; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
+        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 40px; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
         .step { text-align: center; flex: 1; }
         .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
         .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
 
-        /* Navigation & Views */
         .view { display: none; padding: 40px 0; text-align: center; }
         .view.active { display: block; }
         .btn { padding: 12px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; margin: 10px; }
         .btn-next { background: var(--teal); color: white; }
         .btn-back { background: #6b7280; color: white; }
 
-        /* Dashboard */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
         .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
         .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; }
+        
+        input[type="text"], input[type="password"] { padding: 12px; width: 300px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -45,27 +44,26 @@
 
     <div id="view-1" class="view active">
         <h1>Staff Sign-In</h1>
-        <p>Enter your clinic access code to begin.</p>
-        <input type="password" id="pass" placeholder="Access Code" style="padding:12px; width:250px; border-radius:6px; border:1px solid #ccc; font-size: 16px;">
-        <br><br>
+        <p>Enter the clinic access code.</p>
+        <input type="password" id="pass" placeholder="Access Code">
+        <br>
         <button class="btn btn-next" onclick="validatePass()">CONTINUE →</button>
     </div>
 
     <div id="view-2" class="view">
-        <h1>EPCC Command Center</h1>
-        <p>Select clinic location to sync live data.</p>
-        <select id="clinic" style="padding:12px; width:300px; border-radius:6px; font-size: 16px; margin-bottom: 20px;">
+        <h1>Clinic Selection</h1>
+        <select id="clinic" style="padding:12px; width:300px; border-radius:6px; font-size: 16px;">
             <option value="addison">Addison Clinic</option>
             <option value="abrams">Abrams Clinic</option>
         </select>
-        <br>
+        <br><br>
         <button class="btn btn-back" onclick="goToStep(1)">← BACK</button>
-        <button class="btn btn-next" onclick="goToStep(3)">NEXT: SYNC SCHEDULES →</button>
+        <button class="btn btn-next" onclick="goToStep(3)">NEXT →</button>
     </div>
 
     <div id="view-3" class="view">
-        <h1>Verify Schedule Audit</h1>
-        <p>Ready to pull the latest eCW data and cross-reference with the Master Ledger.</p>
+        <h1>Sync Data</h1>
+        <p>Ready to audit the selected clinic schedule.</p>
         <button class="btn btn-back" onclick="goToStep(2)">← BACK</button>
         <button class="btn btn-next" onclick="runAutomation()" style="background:var(--success)">PROCESS SCHEDULE →</button>
     </div>
@@ -88,18 +86,21 @@
 
     <div id="view-5" class="view">
         <h1>Final Attestation</h1>
-        <div style="max-width:400px; margin:auto; text-align:left; background:#fffde7; padding:20px; border-radius:8px; border:1px solid #ffe082;">
+        <div style="max-width:500px; margin:auto; text-align:left; background:#f9fafb; padding:30px; border-radius:8px; border:1px solid #ddd;">
+            <label><b>Auditor Full Name:</b></label><br>
+            <input type="text" id="auditorName" placeholder="Enter your full name" style="width:100%; box-sizing:border-box;"><br><br>
+            
             <p><input type="checkbox"> Verified schedule against Master Ledger</p>
             <p><input type="checkbox"> Reported expirations to FO Manager</p>
             <p><input type="checkbox"> Confirmed correct Plan status in eCW</p>
         </div>
         <br>
-        <button class="btn btn-next" onclick="goToStep(6)">SIGN & COMPLETE</button>
+        <button class="btn btn-next" onclick="finishAudit()">SIGN & COMPLETE</button>
     </div>
 
     <div id="view-6" class="view">
         <h1 style="color:var(--success)">✓ Audit Complete</h1>
-        <p>Today's audit for the selected clinic has been logged.</p>
+        <p id="completionMessage"></p>
         <button class="btn btn-back" onclick="location.reload()">START NEW SESSION</button>
     </div>
 </div>
@@ -113,7 +114,8 @@
     };
 
     function validatePass() {
-        if(document.getElementById('pass').value === 'EP2026') {
+        // Updated code as per your request
+        if(document.getElementById('pass').value === 'Trinity@50Panda') {
             goToStep(2);
         } else {
             alert("Incorrect code. Please try again.");
@@ -121,18 +123,13 @@
     }
 
     function goToStep(stepNumber) {
-        // Hide all views
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        // Show target view
         document.getElementById(`view-${stepNumber}`).classList.add('active');
-        
-        // Update Tracker UI
         document.querySelectorAll('.step').forEach((s, idx) => {
             s.classList.remove('active', 'completed');
             if (idx + 1 < stepNumber) s.classList.add('completed');
             if (idx + 1 === stepNumber) s.classList.add('active');
         });
-        
         currentStep = stepNumber;
     }
 
@@ -156,6 +153,13 @@
         document.getElementById('ledgerBody').innerHTML = html;
         document.getElementById('count-bills').innerText = count;
         goToStep(4); 
+    }
+
+    function finishAudit() {
+        const name = document.getElementById('auditorName').value;
+        if(!name) return alert("Please enter your name for attestation.");
+        document.getElementById('completionMessage').innerText = `Audit submitted by ${name}. Today's work is complete.`;
+        goToStep(6);
     }
 </script>
 </body>
