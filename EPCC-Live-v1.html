@@ -2,112 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EP Daily Results - Assembly Line</title>
+    <title>Essential Plan Daily Workflow</title>
     <style>
-        /* Your original assembly line styling preserved exactly */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; padding: 20px; }
-        .results-container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        :root { --primary: #0f2942; --accent: #00b4d8; --success: #10b981; --bg: #f3f4f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* Progress Tracker */
+        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .step { text-align: center; flex: 1; position: relative; }
+        .step-circle { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold; color: #9ca3af; border: 3px solid transparent; }
+        .step.active .step-circle { border-color: var(--accent); color: var(--accent); background: white; }
+        .step.completed .step-circle { background: var(--success); color: white; }
+        
+        /* UI Components */
+        .page { display: none; }
+        .page.active { display: block; }
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .metric-card { background: #0f2942; color: white; padding: 20px; border-radius: 8px; text-align: center; }
-        .tabs { border-bottom: 2px solid #e2e8f0; display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; cursor: pointer; border-radius: 8px 8px 0 0; background: #f8fafc; font-weight: bold; border: 1px solid #e2e8f0; border-bottom: none; }
-        .tab.active { background: #fff; border-top: 4px solid #00b4d8; color: #00b4d8; margin-top: -4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px dotted #cbd5e1; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-addon { background: #fef9c3; color: #854d0e; }
-        .status-inactive { background: #fee2e2; color: #991b1b; }
-        .btn-row { display: flex; gap: 15px; margin-top: 30px; }
-        .btn-primary { background: #0f2942; color: white; padding: 12px 24px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
-        .btn-next { background: #00b4d8; color: white; padding: 12px 24px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .metric-card { background: var(--primary); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+        .tab { padding: 12px 20px; cursor: pointer; background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0; }
+        .tab.active { background: white; border-top: 4px solid var(--accent); font-weight: bold; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .btn { padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; }
+        .btn-next { background: var(--accent); color: white; float: right; }
+        .btn-back { background: #6b7280; color: white; }
     </style>
 </head>
 <body>
 
-<div class="results-container">
-    <h2>RESULTS</h2>
-    
-    <div class="metrics-grid">
-        <div class="metric-card"><h1>4</h1>ADDISON SUPERBILLS</div>
-        <div class="metric-card"><h1>2</h1>ABRAMS SUPERBILLS</div>
-        <div class="metric-card"><h1>2</h1>ECW ACTIONS</div>
-        <div class="metric-card"><h1>2</h1>EXPIRING (7 DAYS)</div>
+<div class="container">
+    <div class="tracker">
+        <div class="step completed" id="t1"><div class="step-circle">1</div><small>SIGN IN</small></div>
+        <div class="step completed" id="t2"><div class="step-circle">2</div><small>LEDGER</small></div>
+        <div class="step active" id="t3"><div class="step-circle">3</div><small>SCHEDULES</small></div>
+        <div class="step" id="t4"><div class="step-circle">4</div><small>RESULTS</small></div>
+        <div class="step" id="t5"><div class="step-circle">5</div><small>ATTESTATION</small></div>
+        <div class="step" id="t6"><div class="step-circle">6</div><small>COMPLETE</small></div>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('addison')">🏥 ADDISON <span class="count">4</span></div>
-        <div class="tab" onclick="showTab('abrams')">🏥 ABRAMS <span class="count">2</span></div>
-        <div class="tab" onclick="showTab('inactive')">⚠️ INACTIVE <span class="count">2</span></div>
-        <div class="tab" onclick="showTab('expiring')">🔔 EXPIRING <span class="count">2</span></div>
-    </div>
-
-    <div id="addison-tab" class="tab-content">
-        <table>
-            <thead>
-                <tr><th>MRN</th><th>NAME</th><th>DOB</th><th>PLAN</th><th>LAST VISIT (Q)</th><th>STATUS</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>MRN001</td><td>Maria Santos</td><td>Apr 15, 1982</td><td>Annual</td><td>None</td><td><span class="status-badge status-active">Active</span></td></tr>
-                <tr><td>MRN003</td><td>Linda Chen</td><td>Jan 8, 1990</td><td>Annual</td><td>01/15/2026</td><td><span class="status-badge status-addon">Add-On ($129)</span></td></tr>
-            </tbody>
-        </table>
-        <div class="btn-row">
-            <button class="btn-primary">⬇ PRINT / DOWNLOAD ADDISON SUPERBILLS</button>
-            <button class="btn-next" onclick="showTab('abrams')">NEXT: ABRAMS →</button>
+    <div id="page3" class="page active">
+        <h2>Upload Today's eCW Schedule</h2>
+        <div style="border: 2px dashed #cbd5e1; padding: 40px; text-align: center; border-radius: 8px;">
+            <input type="file" id="scheduleUpload">
+            <p>Drop the eCW .csv or .xls file here to begin the audit.</p>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn btn-back">← BACK</button>
+            <button class="btn btn-next" onclick="goToPage(4)">PROCESS SCHEDULE →</button>
         </div>
     </div>
 
-    <div id="inactive-tab" class="tab-content" style="display:none;">
-        <p style="color: #854d0e; background: #fffbeb; padding: 10px; border-radius: 4px;">Complete all three eCW tasks per patient. Rows turn green when all tasks are done.</p>
-        <table>
-            <thead>
-                <tr><th>MRN</th><th>NAME</th><th>DOB</th><th>ECW TASKS</th></tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>MRN005</td><td>Diane Williams</td><td>Jun 14, 1955</td>
-                    <td>
-                        <input type="checkbox"> UNCHECK SELF-PAY<br>
-                        <input type="checkbox"> REINSTATE PAYER<br>
-                        <input type="checkbox"> DELETE NOTE IN INFO PAGE
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="btn-row">
-            <button class="btn-next" onclick="showTab('expiring')">NEXT: EXPIRING →</button>
+    <div id="page4" class="page">
+        <div class="metrics-grid">
+            <div class="metric-card"><h1>4</h1>ADDISON</div>
+            <div class="metric-card"><h1>2</h1>ABRAMS</div>
+            <div class="metric-card"><h1>2</h1>INACTIVE</div>
+            <div class="metric-card"><h1>2</h1>EXPIRING</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showSubTab('addison')">ADDISON</div>
+            <div class="tab" onclick="showSubTab('inactive')">INACTIVE</div>
+            <div class="tab" onclick="showSubTab('expiring')">EXPIRING</div>
+        </div>
+
+        <div id="sub-addison">
+            <table>
+                <thead><tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr></thead>
+                <tbody>
+                    <tr><td>102</td><td>Maria Santos</td><td>Annual</td><td><span style="color:green">Active ($0)</span></td></tr>
+                    <tr><td>105</td><td>Linda Chen</td><td>Annual</td><td><span style="color:orange">Add-On ($129)</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="sub-inactive" style="display:none">
+            <p>Complete eCW Cleanup Tasks:</p>
+            <table>
+                <tr><td>MRN005</td><td>Diane Williams</td><td>
+                    <input type="checkbox"> Uncheck Self-Pay | <input type="checkbox"> Reinstate Payer | <input type="checkbox"> Delete Note
+                </td></tr>
+            </table>
+        </div>
+
+        <div id="sub-expiring" style="display:none">
+            <table>
+                <thead><tr><th>MRN</th><th>NAME</th><th>COLLECT</th></tr></thead>
+                <tbody>
+                    <tr><td>MRN002</td><td>James Okafor</td><td><strong>$329.00</strong></td></tr>
+                    <tr><td>MRN015</td><td>Edwins Herrera</td><td><strong>$1,000.00</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <button class="btn btn-back" onclick="goToPage(3)">← BACK</button>
+            <button class="btn btn-next" onclick="goToPage(5)">NEXT: ATTESTATION →</button>
         </div>
     </div>
 
-    <div id="expiring-tab" class="tab-content" style="display:none;">
-        <table>
-            <thead>
-                <tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>RENEWAL DATE</th><th>COLLECT</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>MRN002</td><td>James Okafor</td><td>Quarterly</td><td>Mar 31, 2026</td><td><strong>$329.00</strong></td></tr>
-                <tr><td>MRN009</td><td>Edwins Herrera</td><td>Family Add-On</td><td>Mar 27, 2026</td><td><strong>$1,000.00 (PIF)</strong></td></tr>
-            </tbody>
-        </table>
-        <div class="btn-row">
-            <button class="btn-primary">DOWNLOAD EXPIRING REPORT</button>
-            <button class="btn-next">PROCEED TO ATTESTATION →</button>
+    <div id="page5" class="page">
+        <h2>Final Attestation</h2>
+        <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
+            <p><input type="checkbox"> I confirm that the 7-day Expiring Report was messaged to the FO Manager.</p>
+            <p><input type="checkbox"> I confirm all Inactive patient charts in eCW have been reconciled.</p>
+            <p><input type="checkbox"> I authorize the write-back of today's visits to the Master Ledger.</p>
         </div>
+        <button class="btn btn-next" style="background:var(--success)" onclick="goToPage(6)">FINALIZE & COMPLETE →</button>
     </div>
 </div>
 
 <script>
-    // Constants for the automated engine
-    const RATES = { quarterly: 329.00, annual: 1116.00, family: 1000.00 };
+    function goToPage(pageNum) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page' + pageNum).classList.add('active');
+        
+        document.querySelectorAll('.step').forEach((s, idx) => {
+            if (idx + 1 < pageNum) s.className = 'step completed';
+            else if (idx + 1 === pageNum) s.className = 'step active';
+            else s.className = 'step';
+        });
+    }
 
-    function showTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    function showSubTab(name) {
+        document.getElementById('sub-addison').style.display = (name === 'addison') ? 'block' : 'none';
+        document.getElementById('sub-inactive').style.display = (name === 'inactive') ? 'block' : 'none';
+        document.getElementById('sub-expiring').style.display = (name === 'expiring') ? 'block' : 'none';
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabName + '-tab').style.display = 'block';
-        event.currentTarget.classList.add('active');
+        event.target.classList.add('active');
     }
 </script>
-
 </body>
 </html>
