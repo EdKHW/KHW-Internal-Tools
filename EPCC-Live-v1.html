@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPCC - Live Automated Center</title>
+    <title>EPCC - Controlled Progress Tracker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --teal: #008080; --dark: #001f3f; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --gold: #f39c12; }
+        :root { --teal: #008080; --dark: #001f3f; --success: #27ae60; --bg: #f4f7f6; --gold: #f39c12; --grey: #cbd5e0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
         .header { background: var(--dark); color: white; padding: 15px 30px; border-bottom: 4px solid var(--gold); }
+        
+        /* PROGRESS TRACKER (Locked Navigation) */
         .nav-steps { display: flex; justify-content: center; background: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .step-item { margin: 0 15px; text-align: center; color: #ccc; font-weight: bold; font-size: 0.8rem; }
-        .step-item.active { color: var(--teal); }
-        .main-card { background: white; max-width: 1000px; margin: 40px auto; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .step-item { margin: 0 20px; text-align: center; color: var(--grey); font-weight: bold; font-size: 0.75rem; transition: 0.3s; pointer-events: none; }
+        .step-item.active { color: var(--teal); border-bottom: 3px solid var(--teal); }
+        .step-item.completed { color: var(--success); }
+        
+        .main-card { background: white; max-width: 1000px; margin: 40px auto; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; position: relative; min-height: 350px; }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: #eee; color: #666; padding: 8px 15px; border-radius: 5px; font-size: 0.7rem; cursor: pointer; border: none; font-weight: bold; }
+        
         .sync-status-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 30px 0; }
         .sync-card { padding: 20px; border-radius: 10px; border: 1px solid #eee; background: #fafafa; }
         .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #bbb; }
         .active-dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
-        button { background: #4dd0e1; color: white; border: none; padding: 18px 40px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; }
-        button:hover { background: var(--teal); }
+        
+        button.primary { background: #4dd0e1; color: white; border: none; padding: 18px 40px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; }
+        button.primary:hover { background: var(--teal); }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
         th { background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
@@ -29,55 +37,42 @@
 </head>
 <body>
 
-<div class="header">
-    <strong>EPCC — ESSENTIAL PLAN</strong> | COMMAND CENTER
-</div>
+<div class="header"><strong>EPCC — ESSENTIAL PLAN</strong> | COMMAND CENTER</div>
 
 <div class="nav-steps">
-    <div class="step-item active" id="nav1">SIGN IN</div>
-    <div class="step-item" id="nav2">SYNC DATA</div>
-    <div class="step-item" id="nav3">RESULTS</div>
+    <div class="step-item active" id="nav1">1. SIGN IN</div>
+    <div class="step-item" id="nav2">2. SYNC DATA</div>
+    <div class="step-item" id="nav3">3. RESULTS</div>
 </div>
 
 <div class="main-card">
     <div id="step1" class="step-content">
         <h2>Verify Identity</h2>
         <input type="password" id="accessCode" placeholder="Access Code" style="padding:15px; width:250px; border-radius:8px; border:1px solid #ddd;"><br><br>
-        <button onclick="startSession()">Enter Command Center</button>
+        <button class="primary" onclick="startSession()">Unlock Portal</button>
     </div>
 
-    <div id="step2" style="display:none;">
-        <h2>Cloud Data Pipeline</h2>
-        <p>Connecting to Google Drive Master Buckets...</p>
-        
+    <div id="step2" class="step-content" style="display:none;">
+        <button class="back-btn" onclick="goToStep(1)">← Logout</button>
+        <h2>Cloud Data Sync</h2>
         <div class="sync-status-grid">
-            <div class="sync-card">
-                <div id="dotMaster" class="status-dot"></div><strong>Member Ledger</strong>
-                <div id="txtMaster" style="font-size:0.7rem; color:#888;">Connecting...</div>
-            </div>
-            <div class="sync-card">
-                <div id="dotAddison" class="status-dot"></div><strong>Addison Schedule</strong>
-                <div id="txtAddison" style="font-size:0.7rem; color:#888;">Connecting...</div>
-            </div>
-            <div class="sync-card">
-                <div id="dotAbrams" class="status-dot"></div><strong>Abrams Schedule</strong>
-                <div id="txtAbrams" style="font-size:0.7rem; color:#888;">Connecting...</div>
-            </div>
+            <div class="sync-card"><div id="dotMaster" class="status-dot"></div><strong>Ledger</strong><div id="txtMaster">Connecting...</div></div>
+            <div class="sync-card"><div id="dotAddison" class="status-dot"></div><strong>Addison</strong><div id="txtAddison">Connecting...</div></div>
+            <div class="sync-card"><div id="dotAbrams" class="status-dot"></div><strong>Abrams</strong><div id="txtAbrams">Connecting...</div></div>
         </div>
-        
-        <button id="processBtn" onclick="runAnalysis()" style="display:none;">Analyze Today's Patients →</button>
+        <button id="processBtn" class="primary" onclick="runAnalysis()" style="display:none;">Analyze Schedules →</button>
     </div>
 
-    <div id="step3" style="display:none;">
+    <div id="step3" class="step-content" style="display:none;">
+        <button class="back-btn" onclick="goToStep(2)">← Back to Sync</button>
         <div id="resultsArea"></div>
         <br>
-        <button onclick="location.reload()" style="background:#95a5a6;">Refresh Data</button>
+        <button class="primary" onclick="location.reload()" style="background:#95a5a6;">Restart & Clear Cache</button>
     </div>
 </div>
 
 <script>
     const SECRET = "Trinity@50Panda";
-    
     const URLS = {
         master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
         addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv", 
@@ -88,25 +83,19 @@
 
     function startSession() {
         if(document.getElementById('accessCode').value === SECRET) {
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
+            goToStep(2);
             syncAll();
-        }
+        } else { alert("Verification Failed"); }
     }
 
     async function fetchData(key, dotId, txtId) {
         try {
             const resp = await fetch(URLS[key]);
             const text = await resp.text();
-            const results = Papa.parse(text, {header:true, skipEmptyLines: true});
-            data[key] = results.data;
+            data[key] = Papa.parse(text, {header:true, skipEmptyLines: true}).data;
             document.getElementById(dotId).classList.add('active-dot');
-            document.getElementById(txtId).innerText = "✅ CONNECTED";
-            return true;
-        } catch(e) { 
-            document.getElementById(txtId).innerText = "❌ OFFLINE";
-            return false; 
-        }
+            document.getElementById(txtId).innerText = "Synced";
+        } catch(e) { document.getElementById(txtId).innerText = "Retry Needed"; }
     }
 
     async function syncAll() {
@@ -114,41 +103,30 @@
         await fetchData('addison', 'dotAddison', 'txtAddison');
         await fetchData('abrams', 'dotAbrams', 'txtAbrams');
         document.getElementById('processBtn').style.display = 'inline-block';
-        document.getElementById('nav2').classList.add('active');
     }
 
     function runAnalysis() {
         let html = `<table><tr><th>Clinic</th><th>Time</th><th>Patient</th><th>Pat #</th><th>Status</th></tr>`;
-        
         ['addison', 'abrams'].forEach(loc => {
             data[loc].forEach(row => {
                 const mrn = row['Pat #']?.trim();
-                const dob = row['Pat Birthdate']?.trim();
                 if(!mrn) return;
-
-                const match = data.master.find(m => 
-                    m['MRN']?.trim() === mrn && 
-                    m['DOB']?.trim() === dob
-                );
-
-                const statusClass = match ? 'match' : 'no-match';
-                const statusText = match ? 'ACTIVE MEMBER' : 'ADD-ON / NOT FOUND';
-                
-                html += `<tr>
-                    <td style="text-transform:uppercase; font-size:0.7rem; font-weight:bold;">${loc}</td>
-                    <td>${row['Time'] || '--'}</td>
-                    <td>${row['Pat F Name'] || ''} ${row['Pat L Name'] || ''}</td>
-                    <td>${mrn}</td>
-                    <td><span class="pill ${statusClass}">${statusText}</span></td>
-                </tr>`;
+                const match = data.master.find(m => m['MRN']?.trim() === mrn && m['DOB']?.trim() === row['Pat Birthdate']?.trim());
+                html += `<tr><td>${loc.toUpperCase()}</td><td>${row['Time'] || '--'}</td><td>${row['Pat F Name']} ${row['Pat L Name']}</td><td>${mrn}</td><td><span class="pill ${match ? 'match' : 'no-match'}">${match ? 'ACTIVE' : 'ADD-ON'}</span></td></tr>`;
             });
         });
+        document.getElementById('resultsArea').innerHTML = html + `</table>`;
+        goToStep(3);
+    }
 
-        html += `</table>`;
-        document.getElementById('resultsArea').innerHTML = html;
-        document.getElementById('step2').style.display = 'none';
-        document.getElementById('step3').style.display = 'block';
-        document.getElementById('nav3').classList.add('active');
+    function goToStep(n) {
+        document.querySelectorAll('.step-content').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.step-item').forEach((s, idx) => {
+            s.classList.remove('active', 'completed');
+            if(idx + 1 < n) s.classList.add('completed');
+            if(idx + 1 === n) s.classList.add('active');
+        });
+        document.getElementById('step' + n).style.display = 'block';
     }
 </script>
 </body>
