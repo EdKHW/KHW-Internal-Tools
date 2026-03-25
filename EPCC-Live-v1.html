@@ -9,29 +9,30 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
         .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* Progress Tracker */
-        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        /* Fixed Horizontal Tracker */
+        .tracker { display: flex; justify-content: space-between; margin-bottom: 40px; width: 100%; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
         .step { text-align: center; flex: 1; }
-        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
-        .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
+        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; border: 2px solid transparent; }
+        .step.active .step-circle { border-color: var(--teal); color: var(--teal); background: white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
 
         /* Dashboard Metrics */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
-        .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
+        .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--gold); }
+        .metric-card h1 { margin: 0; font-size: 36px; color: var(--gold); }
 
         /* Tabs */
         .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
         .tab { padding: 12px 20px; cursor: pointer; background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0; font-weight: bold; }
         .tab.active { background: white; border-top: 4px solid var(--teal); color: var(--teal); }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
         
+        .btn-primary { background: var(--teal); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .no-print { display: block; }
-        @media print { .no-print { display: none; } }
+        @media print { .no-print { display: none; } .container { box-shadow: none; padding: 0; } }
     </style>
 </head>
 <body>
@@ -40,31 +41,34 @@
     <div class="tracker no-print">
         <div class="step completed"><div class="step-circle">✓</div><small>SIGN IN</small></div>
         <div class="step completed"><div class="step-circle">✓</div><small>LEDGER</small></div>
+        <div class="step completed"><div class="step-circle">✓</div><small>SCHEDULES</small></div>
         <div class="step active"><div class="step-circle">4</div><small>RESULTS</small></div>
         <div class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
+        <div class="step"><div class="step-circle">6</div><small>COMPLETE</small></div>
     </div>
 
-    <div id="setupView" class="no-print" style="text-align: center;">
-        <h2>Clinic Decision Engine</h2>
-        <select id="clinic" style="padding: 10px; width: 200px;">
+    <div id="setupView" class="no-print" style="text-align: center; padding: 40px 0;">
+        <h2 style="margin-bottom: 20px;">Clinic Decision Engine</h2>
+        <select id="clinic" style="padding: 12px; width: 250px; font-size: 16px; border-radius: 6px; margin-right: 10px;">
             <option value="addison">Addison Clinic</option>
             <option value="abrams">Abrams Clinic</option>
         </select>
-        <button onclick="startSession()" style="background: var(--teal); color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer;">START AUDIT</button>
+        <button class="btn-primary" onclick="startSession()">START DAILY AUDIT</button>
     </div>
 
     <div id="resultsView" style="display:none;">
-        <h2 id="clinicHeader">RESULTS</h2>
+        <h2 id="clinicHeader" style="margin-top:0;">AUDIT RESULTS</h2>
         
         <div class="metrics-grid">
-            <div class="metric-card"><h1 id="count-addison">0</h1>SUPERBILLS</div>
-            <div class="metric-card"><h1 id="count-ecw">0</h1>ECW ACTIONS</div>
+            <div class="metric-card"><h1 id="count-bills">0</h1>SUPERBILLS</div>
+            <div class="metric-card"><h1 id="count-ecw">2</h1>ECW ACTIONS</div>
             <div class="metric-card"><h1 id="count-exp">0</h1>EXPIRING</div>
             <div class="metric-card"><h1>03/25</h1>DOS</div>
         </div>
 
         <div class="tabs no-print">
             <div class="tab active" onclick="showTab('audit')">🏥 CLINIC AUDIT</div>
+            <div class="tab" onclick="showTab('inactive')">⚠️ INACTIVE</div>
             <div class="tab" onclick="showTab('attest')">✍️ ATTESTATION</div>
         </div>
 
@@ -77,12 +81,22 @@
             </table>
         </div>
 
+        <div id="tab-inactive" style="display:none;">
+            <p style="background:#fff4ed; padding:15px; border-radius:8px; color:#c2410c;">Complete the 3-step cleanup in eCW for these patients.</p>
+            <table>
+                <thead><tr><th>MRN</th><th>NAME</th><th>REQUIRED TASKS</th></tr></thead>
+                <tbody>
+                    <tr><td>MRN005</td><td>Diane Williams</td><td>[ ] Uncheck Self-Pay | [ ] Reinstate Payer | [ ] Delete Note</td></tr>
+                </tbody>
+            </table>
+        </div>
+
         <div id="tab-attest" style="display:none;" class="no-print">
-            <div style="background: #fffde7; padding: 20px; border-radius: 8px; border: 1px solid #ffe082;">
+            <div style="background: #fffde7; padding: 30px; border-radius: 8px; border: 1px solid #ffe082;">
                 <h3>Final Hand-off Checklist</h3>
-                <p><input type="checkbox" id="check1"> Schedule verified against Master Ledger</p>
-                <p><input type="checkbox" id="check2"> Expiration report sent to FO Manager</p>
-                <button onclick="finalize()" style="background: var(--navy); color: white; padding: 12px 24px; border: none; border-radius: 6px;">PRINT CLINIC LEDGER</button>
+                <p><input type="checkbox" id="check1"> I have verified the schedule against the Master Ledger</p>
+                <p><input type="checkbox" id="check2"> I have messaged the 7-day report to FO</p>
+                <button class="btn-primary" style="background: var(--navy);" onclick="window.print()">PRINT LEDGER FOR FRONT OFFICE</button>
             </div>
         </div>
     </div>
@@ -110,39 +124,33 @@
             const member = masterData.find(m => m['MRN'] === p['Pat #']);
             if(!member) return;
 
-            let amount = "$0.00";
-            let reason = "Plan Visit";
             bills++;
+            let amount = "$0.00";
+            let reason = "Standard Visit";
 
-            if(member['Plan'].includes('Quarterly') && p['Appt Type'].includes('EST')) {
-                amount = "$329.00"; // Updated per pricing logic
-                reason = "Quarterly Renewal Due";
+            if(member['Plan']?.includes('Quarterly')) {
+                amount = "$329.00";
+                reason = "Renewal Due";
                 expiring++;
             }
 
-            html += `<tr><td>${p['Pat #']}</td><td>${p['Pat Birthdate']}</td><td>${member['Plan']}</td><td>${amount}</td><td>${reason}</td></tr>`;
+            html += `<tr><td>${p['Pat #']}</td><td>${p['Pat Birthdate']}</td><td>${member['Plan']}</td><td><b>${amount}</b></td><td>${reason}</td></tr>`;
         });
 
         document.getElementById('ledgerBody').innerHTML = html;
-        document.getElementById('count-addison').innerText = bills;
+        document.getElementById('count-bills').innerText = bills;
         document.getElementById('count-exp').innerText = expiring;
         document.getElementById('setupView').style.display = 'none';
         document.getElementById('resultsView').style.display = 'block';
-        document.getElementById('clinicHeader').innerText = clinic.toUpperCase() + " AUDIT RESULTS";
+        document.getElementById('clinicHeader').innerText = clinic.toUpperCase() + " AUDIT - DOS 03/25/2026";
     }
 
     function showTab(name) {
         document.getElementById('tab-audit').style.display = (name === 'audit') ? 'block' : 'none';
+        document.getElementById('tab-inactive').style.display = (name === 'inactive') ? 'block' : 'none';
         document.getElementById('tab-attest').style.display = (name === 'attest') ? 'block' : 'none';
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.currentTarget.classList.add('active');
-    }
-
-    function finalize() {
-        if(!document.getElementById('check1').checked || !document.getElementById('check2').checked) {
-            return alert("Complete the checklist first.");
-        }
-        window.print();
     }
 </script>
 </body>
