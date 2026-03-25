@@ -9,25 +9,31 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
         .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-height: 600px; }
         
-        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 40px; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
-        .step { text-align: center; flex: 1; }
+        /* Force Horizontal Tracker */
+        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 40px; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; width: 100%; }
+        .step { text-align: center; flex: 1; min-width: 80px; }
         .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
         .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
 
+        /* Views */
         .view { display: none; padding: 40px 0; text-align: center; }
         .view.active { display: block; }
-        .btn { padding: 12px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; margin: 10px; }
+        
+        /* Inputs & Buttons */
+        input[type="text"], input[type="password"], select { padding: 12px; width: 320px; border-radius: 6px; border: 2px solid #cbd5e1; font-size: 16px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--teal); }
+        .btn { padding: 14px 32px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; margin: 10px; font-size: 14px; text-transform: uppercase; }
         .btn-next { background: var(--teal); color: white; }
-        .btn-back { background: #6b7280; color: white; }
+        .btn-back { background: #64748b; color: white; }
 
+        /* Dashboard & Table */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
         .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
         .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; }
-        
-        input[type="text"], input[type="password"] { padding: 12px; width: 300px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
+        th { background: #f8fafc; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
@@ -43,122 +49,127 @@
     </div>
 
     <div id="view-1" class="view active">
-        <h1>Staff Sign-In</h1>
-        <p>Enter the clinic access code.</p>
-        <input type="password" id="pass" placeholder="Access Code">
+        <h1 style="margin-bottom: 10px;">Staff Authentication</h1>
+        <p style="color: #64748b; margin-bottom: 30px;">Enter the secure clinic access code to proceed.</p>
+        <input type="password" id="passInput" placeholder="Access Code">
         <br>
-        <button class="btn btn-next" onclick="validatePass()">CONTINUE →</button>
+        <button class="btn btn-next" onclick="checkPassword()">CONTINUE →</button>
     </div>
 
     <div id="view-2" class="view">
         <h1>Clinic Selection</h1>
-        <select id="clinic" style="padding:12px; width:300px; border-radius:6px; font-size: 16px;">
+        <p>Choose the location for today's membership audit.</p>
+        <select id="clinicSelect">
             <option value="addison">Addison Clinic</option>
             <option value="abrams">Abrams Clinic</option>
         </select>
-        <br><br>
+        <br>
         <button class="btn btn-back" onclick="goToStep(1)">← BACK</button>
         <button class="btn btn-next" onclick="goToStep(3)">NEXT →</button>
     </div>
 
     <div id="view-3" class="view">
-        <h1>Sync Data</h1>
-        <p>Ready to audit the selected clinic schedule.</p>
+        <h1>Sync Clinic Data</h1>
+        <p>System will cross-reference Master Ledger with live eCW Schedule.</p>
         <button class="btn btn-back" onclick="goToStep(2)">← BACK</button>
         <button class="btn btn-next" onclick="runAutomation()" style="background:var(--success)">PROCESS SCHEDULE →</button>
     </div>
 
     <div id="view-4" class="view" style="text-align: left;">
         <div class="metrics-grid">
-            <div class="metric-card"><h1 id="count-bills">0</h1>SUPERBILLS</div>
+            <div class="metric-card"><h1 id="m-bills">0</h1>SUPERBILLS</div>
             <div class="metric-card"><h1>0</h1>ACTIONS</div>
             <div class="metric-card"><h1>0</h1>EXPIRING</div>
             <div class="metric-card"><h1>03/25</h1>DOS</div>
         </div>
         <table>
-            <thead><tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr></thead>
-            <tbody id="ledgerBody"></tbody>
+            <thead><tr><th>MRN</th><th>PATIENT NAME</th><th>PLAN</th><th>STATUS</th></tr></thead>
+            <tbody id="resultBody"></tbody>
         </table>
-        <div style="text-align:right; margin-top:20px;">
+        <div style="text-align:right; margin-top:30px;">
             <button class="btn btn-next" onclick="goToStep(5)">NEXT: ATTESTATION →</button>
         </div>
     </div>
 
     <div id="view-5" class="view">
         <h1>Final Attestation</h1>
-        <div style="max-width:500px; margin:auto; text-align:left; background:#f9fafb; padding:30px; border-radius:8px; border:1px solid #ddd;">
-            <label><b>Auditor Full Name:</b></label><br>
-            <input type="text" id="auditorName" placeholder="Enter your full name" style="width:100%; box-sizing:border-box;"><br><br>
+        <div style="max-width:500px; margin:auto; text-align:left; background:#fff; padding:30px; border-radius:8px; border:2px solid #e2e8f0;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Full Name of Auditor:</label>
+            <input type="text" id="userName" placeholder="First and Last Name" style="width:100%; box-sizing:border-box;">
             
-            <p><input type="checkbox"> Verified schedule against Master Ledger</p>
-            <p><input type="checkbox"> Reported expirations to FO Manager</p>
-            <p><input type="checkbox"> Confirmed correct Plan status in eCW</p>
+            <div style="margin-top:20px; line-height: 2;">
+                <label><input type="checkbox" id="chk1"> Verified schedule against Master Ledger</label><br>
+                <label><input type="checkbox" id="chk2"> Reported expirations to FO Manager</label><br>
+                <label><input type="checkbox" id="chk3"> Confirmed correct Plan status in eCW</label>
+            </div>
         </div>
         <br>
-        <button class="btn btn-next" onclick="finishAudit()">SIGN & COMPLETE</button>
+        <button class="btn btn-next" onclick="submitFinal()">SIGN & COMPLETE</button>
     </div>
 
     <div id="view-6" class="view">
         <h1 style="color:var(--success)">✓ Audit Complete</h1>
-        <p id="completionMessage"></p>
+        <p id="finalMsg" style="font-size: 18px;"></p>
         <button class="btn btn-back" onclick="location.reload()">START NEW SESSION</button>
     </div>
 </div>
 
 <script>
-    let currentStep = 1;
     const URLS = {
         master: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
         addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    function validatePass() {
-        // Updated code as per your request
-        if(document.getElementById('pass').value === 'Trinity@50Panda') {
+    function checkPassword() {
+        const input = document.getElementById('passInput').value;
+        // The password you requested
+        if (input === "Trinity@50Panda") {
             goToStep(2);
         } else {
-            alert("Incorrect code. Please try again.");
+            alert("Incorrect access code. Please check spelling and capitalization.");
         }
     }
 
-    function goToStep(stepNumber) {
+    function goToStep(s) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${stepNumber}`).classList.add('active');
-        document.querySelectorAll('.step').forEach((s, idx) => {
-            s.classList.remove('active', 'completed');
-            if (idx + 1 < stepNumber) s.classList.add('completed');
-            if (idx + 1 === stepNumber) s.classList.add('active');
+        document.getElementById(`view-${s}`).classList.add('active');
+        document.querySelectorAll('.step').forEach((step, i) => {
+            step.classList.remove('active', 'completed');
+            if (i + 1 < s) step.classList.add('completed');
+            if (i + 1 === s) step.classList.add('active');
         });
-        currentStep = stepNumber;
     }
 
     async function runAutomation() {
-        const clinic = document.getElementById('clinic').value;
+        const clinic = document.getElementById('clinicSelect').value;
         const [resM, resC] = await Promise.all([fetch(URLS.master), fetch(URLS[clinic])]);
-        const masterData = Papa.parse(await resM.text(), {header:true}).data;
-        const clinicData = Papa.parse(await resC.text(), {header:true}).data;
+        const master = Papa.parse(await resM.text(), {header:true}).data;
+        const schedule = Papa.parse(await resC.text(), {header:true}).data;
 
         let html = "";
         let count = 0;
-        clinicData.forEach(p => {
+        schedule.forEach(p => {
             const id = p['Pat #'] || p['MRN'];
-            const match = masterData.find(m => m['MRN'] === id);
+            const match = master.find(m => m['MRN'] === id);
             if(match) {
                 count++;
                 html += `<tr><td>${id}</td><td>${p['Patient Name'] || 'Member'}</td><td>${match['Plan']}</td><td><b style="color:var(--success)">Active</b></td></tr>`;
             }
         });
 
-        document.getElementById('ledgerBody').innerHTML = html;
-        document.getElementById('count-bills').innerText = count;
-        goToStep(4); 
+        document.getElementById('resultBody').innerHTML = html;
+        document.getElementById('m-bills').innerText = count;
+        goToStep(4);
     }
 
-    function finishAudit() {
-        const name = document.getElementById('auditorName').value;
-        if(!name) return alert("Please enter your name for attestation.");
-        document.getElementById('completionMessage').innerText = `Audit submitted by ${name}. Today's work is complete.`;
+    function submitFinal() {
+        const name = document.getElementById('userName').value;
+        if(!name) return alert("Auditor name is required for attestation.");
+        if(!document.getElementById('chk1').checked || !document.getElementById('chk2').checked || !document.getElementById('chk3').checked) {
+            return alert("Please complete all checkboxes before signing.");
+        }
+        document.getElementById('finalMsg').innerText = `Session verified and signed by ${name} on 03/25/2026.`;
         goToStep(6);
     }
 </script>
