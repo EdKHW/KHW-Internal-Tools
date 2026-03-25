@@ -2,31 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EPCC — Clinic Decision Engine</title>
+    <title>EPCC Daily Workflow</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --navy: #0d2340; --teal: #00BCD4; --gold: #f5a623; --bg: #f4f6f9; --success: #10b981; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 40px; color: var(--navy); }
-        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--navy); }
+        .container { max-width: 1000px; margin: 40px auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* FORCE HORIZONTAL TRACKER */
-        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; margin-bottom: 50px; border-bottom: 1px solid #eee; padding-bottom: 20px; width: 100%; }
-        .step { flex: 1; text-align: center; min-width: 100px; }
-        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #6b7280; }
+        /* THE HEADER FIX: Forces Horizontal */
+        .tracker { display: flex !important; flex-direction: row !important; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .step { flex: 1; text-align: center; }
+        .step-circle { width: 35px; height: 35px; border-radius: 50%; background: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #6b7280; margin-bottom: 5px; }
         .step.active .step-circle { background: var(--teal); color: white; border: 3px solid white; outline: 2px solid var(--teal); }
         .step.completed .step-circle { background: var(--success); color: white; }
-        .step small { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #9ca3af; }
+        .step small { display: block; font-size: 10px; font-weight: bold; color: #9ca3af; text-transform: uppercase; }
 
-        /* Metrics */
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        /* Results Dashboard */
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
+        .metric-card { background: var(--navy); color: white; padding: 20px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--gold); }
         .metric-card h1 { margin: 0; font-size: 32px; color: var(--gold); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; background: #fafafa; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-start { background: var(--teal); color: white; border: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
         
+        .btn { background: var(--teal); color: white; border: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -34,37 +34,39 @@
 
 <div class="container">
     <div class="tracker">
-        <div id="s1" class="step active"><div class="step-circle">1</div><small>SIGN IN</small></div>
-        <div id="s2" class="step"><div class="step-circle">2</div><small>LEDGER</small></div>
-        <div id="s3" class="step"><div class="step-circle">3</div><small>SCHEDULES</small></div>
-        <div id="s4" class="step"><div class="step-circle">4</div><small>RESULTS</small></div>
-        <div id="s5" class="step"><div class="step-circle">5</div><small>ATTESTATION</small></div>
-        <div id="s6" class="step"><div class="step-circle">6</div><small>COMPLETE</small></div>
+        <div id="step-1" class="step active"><div class="step-circle">1</div><small>SIGN IN</small></div>
+        <div id="step-2" class="step"><div class="step-circle">2</div><small>LEDGER</small></div>
+        <div id="step-3" class="step"><div class="step-circle">3</div><small>SCHEDULES</small></div>
+        <div id="step-4" class="step"><div class="step-circle">4</div><small>RESULTS</small></div>
+        <div id="step-5" class="step"><div class="step-circle">5</div><small>ATTEST</small></div>
+        <div id="step-6" class="step"><div class="step-circle">6</div><small>DONE</small></div>
     </div>
 
-    <div id="view-setup" style="text-align: center;">
-        <h1 style="margin-bottom: 10px;">EPCC Command Center</h1>
-        <p style="color: #64748b; margin-bottom: 30px;">Select clinic location to sync live data.</p>
-        <select id="clinicSelect" style="padding: 12px; width: 300px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 6px;">
-            <option value="addison">Addison Clinic</option>
-            <option value="abrams">Abrams Clinic</option>
-        </select><br>
-        <button class="btn-start" onclick="startAudit()">START SESSION →</button>
+    <div id="start-screen" style="text-align: center;">
+        <h2>EPCC Command Center</h2>
+        <p>Syncing Live with Master Ledger & Clinic Schedules</p>
+        <div style="margin: 30px 0;">
+            <select id="clinicSelect" style="padding: 12px; width: 250px; border-radius: 6px; border: 1px solid #ccc;">
+                <option value="addison">Addison Clinic</option>
+                <option value="abrams">Abrams Clinic</option>
+            </select>
+            <button class="btn" onclick="runAutomation()">START AUDIT →</button>
+        </div>
     </div>
 
-    <div id="view-results" class="hidden">
+    <div id="results-screen" class="hidden">
         <div class="metrics-grid">
-            <div class="metric-card"><h1 id="m-bills">0</h1>SUPERBILLS</div>
-            <div class="metric-card"><h1 id="m-ecw">0</h1>ECW ACTIONS</div>
-            <div class="metric-card"><h1 id="m-exp">0</h1>EXPIRING</div>
+            <div class="metric-card"><h1 id="m-count">0</h1>SUPERBILLS</div>
+            <div class="metric-card"><h1>0</h1>ACTIONS</div>
+            <div class="metric-card"><h1>0</h1>EXPIRING</div>
             <div class="metric-card"><h1>03/25</h1>DOS</div>
         </div>
 
         <table>
             <thead>
-                <tr><th>MRN</th><th>NAME</th><th>PLAN</th><th>STATUS</th></tr>
+                <tr><th>MRN</th><th>PATIENT NAME</th><th>PLAN</th><th>STATUS</th></tr>
             </thead>
-            <tbody id="ledgerBody"></tbody>
+            <tbody id="result-rows"></tbody>
         </table>
     </div>
 </div>
@@ -76,48 +78,47 @@
         abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
     };
 
-    async function startAudit() {
-        // 1. UI Transition
+    async function runAutomation() {
         const clinic = document.getElementById('clinicSelect').value;
-        document.getElementById('view-setup').classList.add('hidden');
-        document.getElementById('view-results').classList.remove('hidden');
         
-        // Update Tracker
-        document.getElementById('s1').className = "step completed";
-        document.getElementById('s2').className = "step completed";
-        document.getElementById('s3').className = "step completed";
-        document.getElementById('s4').className = "step active";
+        // UI Change
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('results-screen').classList.remove('hidden');
+        document.getElementById('step-1').className = "step completed";
+        document.getElementById('step-2').className = "step completed";
+        document.getElementById('step-3').className = "step completed";
+        document.getElementById('step-4').className = "step active";
 
-        // 2. Fetch Data
         try {
-            const resMaster = await fetch(URLS.master);
-            const masterData = Papa.parse(await resMaster.text(), {header:true}).data;
-            const resClinic = await fetch(URLS[clinic]);
-            const scheduleData = Papa.parse(await resClinic.text(), {header:true}).data;
+            // THE AUTOMATION: Fetching both sheets
+            const [masterRes, clinicRes] = await Promise.all([fetch(URLS.master), fetch(URLS[clinic])]);
+            const masterData = Papa.parse(await masterRes.text(), {header:true}).data;
+            const clinicData = Papa.parse(await clinicRes.text(), {header:true}).data;
 
             let html = "";
-            let count = 0;
+            let matchCount = 0;
 
-            scheduleData.forEach(p => {
-                const mrn = p['Pat #'] || p['MRN'];
-                if(!mrn) return;
+            // THE LOGIC: Compare Schedule to Ledger
+            clinicData.forEach(row => {
+                const id = row['Pat #'] || row['MRN'];
+                const match = masterData.find(m => m['MRN'] === id);
                 
-                const member = masterData.find(m => m['MRN'] === mrn);
-                if(member) {
-                    count++;
+                if(match) {
+                    matchCount++;
                     html += `<tr>
-                        <td>${mrn}</td>
-                        <td>${p['Patient Name'] || 'Member'}</td>
-                        <td>${member['Plan'] || 'EP Standard'}</td>
-                        <td><b style="color:green">Active</b></td>
+                        <td>${id}</td>
+                        <td>${row['Patient Name'] || 'Member'}</td>
+                        <td>${match['Plan'] || 'EP Standard'}</td>
+                        <td><b style="color:var(--success)">Active</b></td>
                     </tr>`;
                 }
             });
 
-            document.getElementById('ledgerBody').innerHTML = html;
-            document.getElementById('m-bills').innerText = count;
-        } catch (e) {
-            alert("Error syncing data. Check Google Sheet links.");
+            document.getElementById('result-rows').innerHTML = html;
+            document.getElementById('m-count').innerText = matchCount;
+
+        } catch (err) {
+            alert("Handshake failed. Check Internet or Google Sheet publishing.");
         }
     }
 </script>
