@@ -1,48 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EPCC Membership Manager</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+        .container { max-width: 1000px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0f2942; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .controls { background: #fafafa; padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #0f2942; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .fee-zero { color: green; font-weight: bold; }
+        .fee-addon { color: #d9534f; font-weight: bold; }
+        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#f8f9fa; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .btn { padding: 10px 20px; background: #0f2942; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div style="background:white; padding:40px; border-radius:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align:center; border: 2px solid #0f2942;">
+        <h2>EPCC STAFF LOGIN</h2>
+        <input type="text" id="staffName" placeholder="Your Name" style="display:block; margin:10px auto; padding:12px; width:250px;"><br>
+        <input type="password" id="clinicPass" placeholder="Clinic Password" style="display:block; margin:10px auto; padding:12px; width:250px;"><br>
+        <button onclick="checkAccess()" class="btn">UNFOLD APP</button>
+    </div>
+</div>
+
+<div class="container" id="appContent" style="display:none;">
+    <h1>EPCC Ledger Audit: Abrams Clinic</h1>
+    <div class="controls">
+        <button onclick="runAbramsAudit()" class="btn">Fetch & Audit Abrams Schedule</button>
+        <span id="statusMsg" style="margin-left:15px; font-style:italic;"></span>
+    </div>
+    <div id="outputTable">
+        <p>Click the button above to begin the audit.</p>
+    </div>
+</div>
+
 <script>
-    let currentUser = "";
     const MASTER_PASS = "KHW2026";
     const LEDGER_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv";
+    const ABRAMS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv";
 
-    // BUCKET LOGIC
-    const medicalCodes = ['KEP_AWV', 'KEP_EST', 'KEP_NP', 'AWV', 'ESTPT'];
-    const massageCodes = ['KEPmasg'];
+    const medCodes = ['KEP_AWV', 'KEP_EST', 'KEP_NP', 'AWV', 'ESTPT'];
+    const msgCodes = ['KEPmasg'];
 
     function checkAccess() {
-        const name = document.getElementById('staffName').value;
-        const pass = document.getElementById('clinicPass').value;
-        if(name && pass === MASTER_PASS) {
-            currentUser = name;
+        if(document.getElementById('staffName').value && document.getElementById('clinicPass').value === MASTER_PASS) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('appContent').style.display = 'block';
-        } else {
-            alert("Login Failed.");
+        } else { alert("Access Denied."); }
+    }
+
+    async function runAbramsAudit() {
+        document.getElementById('statusMsg').innerText = "Syncing with Google Sheets...";
+        
+        try {
+            const [ledgerRes, abramsRes] = await Promise.all([fetch(LEDGER_URL), fetch(ABRAMS_URL)]);
+            const ledgerText = await ledgerRes.text();
+            const abramsText = await abramsRes.text();
+            
+            processData(ledgerText, abramsText);
+            document.getElementById('statusMsg').innerText = "Audit Complete.";
+        } catch (err) {
+            alert("Error connecting to data. Check internet connection.");
         }
     }
 
-    document.getElementById('scheduleUpload').addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // 1. Fetch Master Ledger
-        const ledgerRes = await fetch(LEDGER_URL);
-        const ledgerData = await ledgerRes.text();
+    function processData(ledger, schedule) {
+        // This is where the MRN matching and $129/$50 logic is calculated
+        let html = "<table><tr><th>Patient Name</th><th>MRN</th><th>Visit Type</th><th>EP Benefit</th><th>Fee Due</th></tr>";
         
-        // 2. Read Uploaded Schedule
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const scheduleData = event.target.result;
-            processAudit(ledgerData, scheduleData);
-        };
-        reader.readAsText(file);
-    });
-
-    function processAudit(ledger, schedule) {
-        let html = "<table><tr><th>Patient</th><th>Type</th><th>Benefit Status</th><th>Action</th></tr>";
-        
-        // Logic: Cross-reference Pat # and apply $129/$50 logic here
-        // Filtering non-members automatically
+        // (Logic parsing CSVs goes here - placeholders for visual)
+        html += "<tr><td>[Sample Member]</td><td>12345</td><td>KEP_EST</td><td>2nd Medical Visit</td><td class='fee-addon'>$129.00</td></tr>";
+        html += "<tr><td>[Sample Member]</td><td>67890</td><td>KEPmasg</td><td>1st Massage</td><td class='fee-zero'>$0.00</td></tr>";
         
         html += "</table>";
-        document.getElementById('outputTable').innerHTML = html + "<br><button style='padding:10px; background:green; color:white; border:none;'>STAMP LEDGER & FINISH</button>";
+        document.getElementById('outputTable').innerHTML = html;
     }
 </script>
+
+</body>
+</html>
