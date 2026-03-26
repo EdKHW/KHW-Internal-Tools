@@ -4,51 +4,66 @@
     <meta charset="UTF-8">
     <title>EPCC Membership Manager</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background: #f4f4f4; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h1 { color: #0f2942; border-bottom: 2px solid #eee; }
-        .status-box { padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; background: #fafafa; }
+        body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+        .container { max-width: 1000px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0f2942; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .controls { background: #fafafa; padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f8f9fa; }
+        th { background-color: #0f2942; color: white; }
         .fee-zero { color: green; font-weight: bold; }
-        .fee-addon { color: red; font-weight: bold; }
+        .fee-addon { color: #d9534f; font-weight: bold; }
+        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#f8f9fa; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Essential Plan Clinic Ledger</h1>
-        
-        <div class="status-box">
-            <strong>Step 1:</strong> Upload Daily Schedule (CSV)<br>
-            <input type="file" id="scheduleUpload" accept=".csv">
-        </div>
 
-        <div id="output">
-            <p>Waiting for data comparison...</p>
-        </div>
+<div id="loginOverlay">
+    <div style="background:white; padding:40px; border-radius:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align:center; border: 2px solid #0f2942;">
+        <h2 style="color:#0f2942;">EPCC STAFF LOGIN</h2>
+        <input type="text" id="staffName" placeholder="Your Name" style="display:block; margin:10px auto; padding:12px; width:250px; border:1px solid #ccc;"><br>
+        <input type="password" id="clinicPass" placeholder="Clinic Password" style="display:block; margin:10px auto; padding:12px; width:250px; border:1px solid #ccc;"><br>
+        <button onclick="checkAccess()" style="padding:12px 40px; background:#0f2942; color:white; border:none; cursor:pointer; font-weight:bold; border-radius:5px;">UNFOLD APP</button>
     </div>
+</div>
 
-    <script>
-        // Protocols: Medical Bucket = $129, Massage Bucket = $50
-        const medicalTypes = ['KEP_AWV', 'KEP_EST', 'KEP_NP', 'AWV', 'ESTPT'];
-        const massageTypes = ['KEPmasg'];
+<div class="container" id="appContent" style="display:none;">
+    <h1>Essential Plan Clinic Ledger</h1>
+    <div class="controls">
+        <strong>Step 1: Upload Daily Schedule (CSV)</strong><br><br>
+        <input type="file" id="scheduleUpload" accept=".csv">
+    </div>
+    <div id="outputTable">
+        <p>Awaiting daily schedule upload...</p>
+    </div>
+</div>
 
-        document.getElementById('scheduleUpload').addEventListener('change', function(e) {
-            // This is where the "Handshake" happens. 
-            // It will read the Schedule and compare it to the Master Ledger URL.
-            alert("Ready to connect to your GitHub Master Ledger URL.");
-        });
+<script>
+    let currentUser = "";
+    const MASTER_PASS = "KHW2026"; // Change this to your desired clinic password
 
-        // Logic for the 90-day reset based on Effective Date
-        function checkQuarterlyReset(effectiveDate, lastVisitDate) {
-            const start = new Date(effectiveDate);
-            const last = new Date(lastVisitDate);
-            const diffDays = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24));
-            const currentQuarter = Math.floor(diffDays / 90);
-            // If last visit was in a previous 90-day window, it resets to $0.
-            return false; 
+    // BUCKET LOGIC
+    const medicalCodes = ['KEP_AWV', 'KEP_EST', 'KEP_NP', 'AWV', 'ESTPT'];
+    const massageCodes = ['KEPmasg'];
+
+    function checkAccess() {
+        const name = document.getElementById('staffName').value;
+        const pass = document.getElementById('clinicPass').value;
+
+        if(name && pass === MASTER_PASS) {
+            currentUser = name;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+        } else {
+            alert("Please enter both your name and the correct password.");
         }
-    </script>
+    }
+
+    document.getElementById('scheduleUpload').addEventListener('change', function(e) {
+        // HANDSHAKE logic will be inserted here next to pull the Ledger CSV from GitHub
+        alert("Schedule received. Ready to handshake with GitHub Ledger.");
+    });
+</script>
+
 </body>
 </html>
