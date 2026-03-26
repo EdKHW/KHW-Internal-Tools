@@ -5,29 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EPCC Membership Manager | KHW</title>
     <style>
-        :root { --dark: #0f2942; --teal: #00bcd4; --gold: #ff9800; --success: #2e7d32; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        
-        /* Login Screen */
-        #loginOverlay { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--dark); text-align: center; width: 350px; }
+        :root { --dark: #0f2942; --teal: #00bcd4; --gold: #ff9800; --success: #2e7d32; --light: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        #loginOverlay { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--dark); text-align: center; width: 350px; z-index: 2000; }
         .login-input { display: block; width: 100%; margin: 15px 0; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        
-        /* Dashboard (Hidden initially) */
-        #appContent { display: none; width: 95%; max-width: 1100px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); flex-direction: column; }
+        #appContent { display: none; width: 95%; max-width: 1100px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); flex-direction: column; margin: 20px; }
         .tab-bar { display: flex; background: #fff; border-bottom: 1px solid #ddd; padding: 15px 30px 0; gap: 15px; }
         .tab { padding: 14px 20px; border: 1px solid #ddd; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 700; color: #777; font-size: 12px; display: flex; align-items: center; gap: 8px; }
         .tab.active { background: #fff; color: var(--dark); border-top: 3px solid var(--dark); margin-top: -3px; }
         .badge { background: var(--teal); color: white; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
-        
         .content { padding: 30px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #9aa1a7; font-size: 11px; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #eee; }
         td { padding: 16px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
         .btn { padding: 12px 25px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
         .btn-main { background: var(--dark); color: white; margin-right: 10px; }
         .btn-next { background: var(--teal); color: white; }
-        
+        .pill { padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .plan-annual { background: #e0f7fa; color: #00838f; }
+        .status-active { background: #e8f5e9; color: #2e7d32; }
         .footer { background: #f8f9fa; padding: 15px; border-top: 1px solid #eee; color: #777; font-size: 11px; text-align: center; border-radius: 0 0 8px 8px; }
     </style>
 </head>
@@ -41,16 +37,78 @@
 </div>
 
 <div id="appContent">
-    <div class="tab-bar">
-        <div class="tab active" onclick="switchClinic('Addison')">🏥 ADDISON <span class="badge" id="count-addison">0</span></div>
-        <div class="tab" onclick="switchClinic('Abrams')">🏥 ABRAMS <span class="badge" id="count-abrams">0</span></div>
+    <div class="tab-bar" id="tabContainer">
+        <div class="tab active" onclick="loadClinic('Addison')">🏥 ADDISON <span class="badge" id="count-Addison">0</span></div>
+        <div class="tab" onclick="loadClinic('Abrams')">🏥 ABRAMS <span class="badge" id="count-Abrams">0</span></div>
         <div class="tab">⚠️ INACTIVE <span class="badge" style="background:var(--gold)">0</span></div>
     </div>
-
     <div class="content">
         <table id="auditTable">
-            <thead>
-                <tr><th>MRN</th><th>NAME</th><th>DOB</th><th>PLAN</th><th>STATUS</th></tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr><td colspan="5" style="text-align:center; padding:40px; color:#9
+            <thead><tr><th>MRN</th><th>NAME</th><th>DOB</th><th>PLAN</th><th>STATUS</th><th>FEE DUE</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div style="margin-top:25px; display:flex; justify-content:space-between;">
+            <button class="btn" style="background:transparent; border:1px solid #ccc;">← BACK TO SCHEDULES</button>
+            <div>
+                <button class="btn btn-main" onclick="window.print()">⬇ PRINT SUPERBILLS</button>
+                <button class="btn btn-next" id="nextBtn" onclick="toggleClinic()">NEXT CLINIC →</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">Proprietary System of <strong>Kokoro Health & Wellness</strong>. WARNING: Confidential PHI Data. Do not share.</div>
+</div>
+
+<script>
+    const CONFIG = {
+        PASS: "Trinity@50Panda",
+        LEDGER: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4gGPjhdADzgGE6mbCvdcoyRowychCXqzc5UiH_bmuDYnvr4nYQdfAlpV1T9mxVoAuYduLB41MYKk3/pub?gid=0&single=true&output=csv",
+        Addison: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLQ6VUxmcN3zuUekU64pmCFKAy-bQaGG9tTfj7gwvF7J-FKyk9aox14wt1GHNbWhG40vd8b3dKlx7e/pub?gid=0&single=true&output=csv",
+        Abrams: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-4DKLyGq6oRheeLMAhyka8EWtqy74sOkfY2oblL5mocdWykBDEsx1i0JdqRJMwYGWde94dIRHiFPO/pub?gid=0&single=true&output=csv"
+    };
+
+    let currentClinic = 'Addison';
+
+    function unfoldApp() {
+        const p = document.getElementById('clinicPass').value;
+        if(p === CONFIG.PASS) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('appContent').style.display = 'flex';
+            document.body.style.alignItems = 'flex-start';
+            loadClinic('Addison');
+        } else { alert("Access Denied."); }
+    }
+
+    async function loadClinic(name) {
+        currentClinic = name;
+        const resLedger = await fetch(CONFIG.LEDGER);
+        const resSched = await fetch(CONFIG[name]);
+        const ledger = await resLedger.text();
+        const sched = await resSched.text();
+        process(ledger, sched);
+    }
+
+    function process(ledgerCsv, schedCsv) {
+        const master = ledgerCsv.split('\n').map(row => row.split(','));
+        const daily = schedCsv.split('\n').map(row => row.split(','));
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        let count = 0;
+
+        daily.forEach(row => {
+            const match = master.find(m => m[0] === row[0]); // Match MRN
+            if(match) {
+                count++;
+                const fee = row[3].includes('masg') ? "$50" : "$129"; // Simplified Logic
+                tbody.innerHTML += `<tr><td>${match[0]}</td><td><b>${match[1]}</b></td><td>${match[2]}</td><td><span class="pill plan-annual">Annual</span></td><td><span class="pill status-active">Active</span></td><td><b style="color:red">${fee}</b></td></tr>`;
+            }
+        });
+        document.getElementById(`count-${currentClinic}`).innerText = count;
+    }
+
+    function toggleClinic() {
+        const next = currentClinic === 'Addison' ? 'Abrams' : 'Addison';
+        loadClinic(next);
+    }
+</script>
+</body>
+</html>
