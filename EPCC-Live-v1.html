@@ -5,116 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EPCC Membership Manager | KHW</title>
     <style>
-        :root { 
-            --dark: #0f2942;         /* Your primary dark blue */
-            --teal: #00bcd4;         /* "Next: Abrams" blue */
-            --light-teal: #e0f7fa;   /* "Annual" plan blue */
-            --light-gold: #fdf6e6;   /* "Quarterly" plan gold */
-            --gold: #ff9800;         /* "Add-On" / Warnings */
-            --success-bg: #e8f5e9;   /* "Active" pill green */
-            --success-text: #2e7d32;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; color: #333; }
-        .container { max-width: 1100px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; min-height: 80vh; }
+        :root { --dark: #0f2942; --teal: #00bcd4; --gold: #ff9800; --success: #2e7d32; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         
-        /* High-Fidelity Tab Bar */
+        /* Login Screen */
+        #loginOverlay { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--dark); text-align: center; width: 350px; }
+        .login-input { display: block; width: 100%; margin: 15px 0; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Dashboard (Hidden initially) */
+        #appContent { display: none; width: 95%; max-width: 1100px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); flex-direction: column; }
         .tab-bar { display: flex; background: #fff; border-bottom: 1px solid #ddd; padding: 15px 30px 0; gap: 15px; }
-        .tab { padding: 14px 24px; border: 1px solid #ddd; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 700; color: #777; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease; letter-spacing: 0.5px; }
+        .tab { padding: 14px 20px; border: 1px solid #ddd; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 700; color: #777; font-size: 12px; display: flex; align-items: center; gap: 8px; }
         .tab.active { background: #fff; color: var(--dark); border-top: 3px solid var(--dark); margin-top: -3px; }
-        .tab:not(.active):hover { color: var(--dark); background: #fafafa; }
+        .badge { background: var(--teal); color: white; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
         
-        /* Badges (Bubbles) */
-        .badge { background: var(--teal); color: white; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: bold; }
-        .badge.warn { background: var(--gold); }
-
-        /* Content Area */
-        .content { padding: 30px; flex-grow: 1; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        th { text-align: left; color: #9aa1a7; font-size: 11px; font-weight: bold; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #eee; letter-spacing: 1px; }
-        td { padding: 16px 10px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
-        tr:hover td { background-color: #fbfbfb; }
+        .content { padding: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #9aa1a7; font-size: 11px; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #eee; }
+        td { padding: 16px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         
-        /* UI Elements (Pills/Labels) */
-        .pill { padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: capitalize; }
-        .status-active { background: var(--success-bg); color: var(--success-text); }
-        .status-addon { background: var(--light-gold); color: var(--gold); }
-        .plan-annual { background: var(--light-teal); color: var(--teal); }
-        .plan-quarterly { background: var(--light-gold); color: #c2954a; }
-        
-        /* High-Fidelity Buttons */
-        .btn-row { display: flex; gap: 15px; margin-top: 25px; align-items: center; }
-        .btn { padding: 12px 25px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s; }
-        .btn:active { transform: translateY(1px); }
-        .btn-print { background: var(--dark); color: white; }
+        .btn { padding: 12px 25px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .btn-main { background: var(--dark); color: white; margin-right: 10px; }
         .btn-next { background: var(--teal); color: white; }
-        .btn-back { background: transparent; border: 1px solid #ccc; color: var(--dark); padding: 10px 20px; font-size: 12px; }
-
-        /* Compliance Footer */
-        .footer { background: #f8f9fa; padding: 15px 30px; border-top: 1px solid #eee; color: #777; font-size: 11px; text-align: center; }
-        .footer strong { color: #555; }
+        
+        .footer { background: #f8f9fa; padding: 15px; border-top: 1px solid #eee; color: #777; font-size: 11px; text-align: center; border-radius: 0 0 8px 8px; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loginOverlay">
+    <h2 style="color:var(--dark); margin-top:0;">EPCC STAFF LOGIN</h2>
+    <input type="text" id="staffName" class="login-input" placeholder="Your Name">
+    <input type="password" id="clinicPass" class="login-input" placeholder="Clinic Password">
+    <button onclick="unfoldApp()" class="btn btn-main" style="width:100%; margin:0;">UNFOLD APP</button>
+</div>
+
+<div id="appContent">
     <div class="tab-bar">
-        <div class="tab active">🏥 ADDISON <span class="badge">4</span></div>
-        <div class="tab">🏥 ABRAMS <span class="badge">2</span></div>
-        <div class="tab">⚠️ INACTIVE <span class="badge warn">2</span></div>
-        <div class="tab">🔔 EXPIRING <span class="badge warn">2</span></div>
+        <div class="tab active" onclick="switchClinic('Addison')">🏥 ADDISON <span class="badge" id="count-addison">0</span></div>
+        <div class="tab" onclick="switchClinic('Abrams')">🏥 ABRAMS <span class="badge" id="count-abrams">0</span></div>
+        <div class="tab">⚠️ INACTIVE <span class="badge" style="background:var(--gold)">0</span></div>
     </div>
 
     <div class="content">
-        <table>
+        <table id="auditTable">
             <thead>
                 <tr><th>MRN</th><th>NAME</th><th>DOB</th><th>PLAN</th><th>STATUS</th></tr>
             </thead>
             <tbody id="tableBody">
-                <tr>
-                    <td>MRN001</td>
-                    <td><b>Maria Santos</b></td>
-                    <td>Apr 15, 1982</td>
-                    <td><span class="pill plan-annual">Annual</span></td>
-                    <td><span class="pill status-active">Active</span></td>
-                </tr>
-                <tr>
-                    <td>MRN002</td>
-                    <td><b>James Okafor</b></td>
-                    <td>Sep 22, 1975</td>
-                    <td><span class="pill plan-quarterly">Quarterly</span></td>
-                    <td><span class="pill status-active">Active</span></td>
-                </tr>
-                <tr>
-                    <td>MRN003</td>
-                    <td><b>Linda Chen</b></td>
-                    <td>Jan 8, 1990</td>
-                    <td><span class="pill plan-annual">Annual</span></td>
-                    <td><span class="pill status-addon">Add-On</span></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="btn-row">
-            <button class="btn btn-print">⬇ PRINT / DOWNLOAD ADDISON SUPERBILLS</button>
-            <button class="btn btn-next" onclick="alert('Proceeding to Abrams flow...')">NEXT: ABRAMS →</button>
-        </div>
-        
-        <div style="margin-top:20px;">
-            <button class="btn btn-back">← BACK TO SCHEDULES</button>
-        </div>
-    </div>
-
-    <div class="footer">
-        Proprietary System of <strong>Kokoro Health & Wellness</strong>. 
-        WARNING: Contains Confidential PHI Data. 
-        Do not copy, share, or download except for legitimate clinical use.
-    </div>
-</div>
-
-<script>
-    // This is where the MRN matching logic will live (already wired to your URLs)
-</script>
-
-</body>
-</html>
+                <tr><td colspan="5" style="text-align:center; padding:40px; color:#9
